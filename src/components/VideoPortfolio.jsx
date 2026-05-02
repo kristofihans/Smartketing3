@@ -6,9 +6,10 @@ const VideoPortfolio = () => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const additionalVideos = [
-    'portfoliovideo2.mp4',
-    'portfoliovideo3.mp4',
-    'portfoliovideo4.mp4',
+    'video2.mp4',
+    'video3.mp4',
+    'video4.mp4',
+    'video5.mp4',
   ];
 
   return (
@@ -32,7 +33,7 @@ const VideoPortfolio = () => {
           transition={{ duration: 0.8 }}
         >
           <video 
-            src="portfoliovideo1.mp4" 
+            src="video.mp4" 
             autoPlay 
             muted 
             loop 

@@ -6,9 +6,8 @@ const PhotoPortfolio = () => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const galleryImages = [
-    'gallery1.png',
-    'gallery2.png',
-    'gallery3.png',
+    'productimage2.jpg',
+    'productimage3.jpg',
   ];
 
   return (
@@ -25,30 +24,32 @@ const PhotoPortfolio = () => {
 
         {/* Hero Photograph */}
         <motion.div 
-          className="feature-media"
+          className="feature-media feature-media--full"
+          style={{ maxWidth: '600px', margin: '0 auto' }}
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
         >
-          <img src="photo_hero.png" alt="Photography Hero" />
+          <img src="productimage1.jpg" alt="Photography Hero" />
         </motion.div>
 
         {/* Expandable Gallery */}
         <AnimatePresence>
           {isExpanded && (
             <motion.div 
-              className="expand-grid"
+              className="expand-container"
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             >
-              <div className="expand-grid" style={{ paddingTop: '2rem' }}>
+              <div style={{ paddingTop: '2rem', display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' }}>
                 {galleryImages.map((src, i) => (
                   <motion.div 
                     key={i}
-                    className="grid-item grid-item--landscape"
+                    className="feature-media feature-media--full"
+                    style={{ flex: '0 1 30%', minWidth: '200px', maxWidth: '300px' }}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.1 }}

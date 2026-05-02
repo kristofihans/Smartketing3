@@ -85,6 +85,13 @@
   max-width: none;
 }
 
+.feature-media--full video,
+.feature-media--full img {
+  aspect-ratio: auto;
+  width: 100%;
+  height: auto;
+}
+
 /* Show More Button — Brutalist */
 .show-more-container {
   display: flex;
