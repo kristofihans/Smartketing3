@@ -61,6 +61,10 @@
 }
 
 @media (max-width: 768px) {
+  .frame-animation {
+    height: 150vh; /* Shorter scroll depth on mobile */
+  }
+
   .frame-animation__title {
     font-size: 3rem;
   }
