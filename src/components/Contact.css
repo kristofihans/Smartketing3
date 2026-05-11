@@ -63,8 +63,9 @@
   background: rgba(16, 16, 20, 0.5);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 0px;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 24px;
+  box-shadow: 0 0 15px rgba(220, 38, 38, 0.05);
   outline: none;
   transition: var(--transition-fast);
 }
@@ -77,8 +78,8 @@
 
 .contact__input:focus,
 .contact__textarea:focus {
-  border-color: var(--color-accent-1);
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+  border-color: rgba(220, 38, 38, 0.6);
+  box-shadow: 0 0 25px rgba(220, 38, 38, 0.25);
   background: rgba(16, 16, 20, 0.7);
 }
 
@@ -101,6 +102,7 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
   border: 1px solid var(--color-accent-1);
+  box-shadow: 0 0 15px rgba(220, 38, 38, 0.2);
 }
 
 .contact__submit:hover {

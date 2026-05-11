@@ -33,7 +33,7 @@
 }
 
 .navbar__logo-img {
-  height: 60px;
+  height: 90px;
   width: auto;
   object-fit: contain;
 }
@@ -138,11 +138,15 @@
 
 @media (max-width: 768px) {
   .navbar {
-    padding: 1rem 1.2rem;
+    padding: 0.8rem 1.2rem;
   }
 
   .navbar--scrolled {
-    padding: 0.6rem 1.2rem;
+    padding: 0.5rem 1.2rem;
+  }
+
+  .navbar__logo-img {
+    height: 50px;
   }
 
   .navbar__links {
@@ -155,6 +159,19 @@
 
   .navbar__hamburger {
     display: flex;
+    gap: 4px;
+  }
+
+  .navbar__hamburger span {
+    width: 20px;
+  }
+
+  .navbar__hamburger--open span:nth-child(1) {
+    transform: rotate(45deg) translateY(4px) translateX(4px);
+  }
+
+  .navbar__hamburger--open span:nth-child(3) {
+    transform: rotate(-45deg) translateY(-4px) translateX(4px);
   }
 
   .navbar__mobile-menu {

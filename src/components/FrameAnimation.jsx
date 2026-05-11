@@ -4,15 +4,15 @@ import './FrameAnimation.css';
 
 const FrameAnimation = ({ children }) => {
   const containerRef = useRef(null);
-  const frameCount = 241;
+  const frameCount = 236;
   const [currentFrame, setCurrentFrame] = useState(1);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start start", "end end"]
+    offset: ["-100vh start", "end end"]
   });
 
-  // Map scroll progress to frame index (1 to 241)
+  // Map scroll progress to frame index (1 to 236)
   const frameIndex = useTransform(scrollYProgress, [0, 1], [1, frameCount]);
 
   useEffect(() => {
@@ -27,7 +27,7 @@ const FrameAnimation = ({ children }) => {
     const preloadImages = () => {
       for (let i = 1; i <= frameCount; i++) {
         const img = new Image();
-        const frameNum = String(i).padStart(3, '0');
+        const frameNum = String(i + 5).padStart(3, '0');
         img.src = `frames/ezgif-frame-${frameNum}.jpg`;
       }
     };
@@ -39,7 +39,7 @@ const FrameAnimation = ({ children }) => {
       <div className="frame-animation__sticky">
         <div className="frame-animation__canvas-container">
           <img 
-            src={`frames/ezgif-frame-${String(currentFrame).padStart(3, '0')}.jpg`} 
+            src={`frames/ezgif-frame-${String(currentFrame + 5).padStart(3, '0')}.jpg`} 
             alt="Animation Frame" 
             className="frame-animation__image"
           />

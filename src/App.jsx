@@ -15,10 +15,10 @@ function App() {
       <Navbar />
       <Hero />
       <FrameAnimation>
-        <Services />
         <VideoPortfolio />
         <PhotoPortfolio />
         <WebPortfolio />
+        <Services />
         <Outro />
         <Footer />
       </FrameAnimation>

@@ -20,10 +20,14 @@
 }
 
 .footer__logo {
-  font-family: var(--font-heading);
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #fff;
+  height: 40px;
+  width: auto;
+  opacity: 0.8;
+  transition: var(--transition-base);
+}
+
+.footer__logo:hover {
+  opacity: 1;
 }
 
 .footer__copy {

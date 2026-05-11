@@ -24,7 +24,7 @@
   --gradient-button: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #450a0a 100%);
 
   /* Typography — Syne Display + Inter Body */
-  --font-heading: 'Orbitron', sans-serif;
+  --font-heading: 'Oxanium', sans-serif;
   --font-body: 'Inter', sans-serif;
 
   /* Spacing — 20% increase for luxury breathing room */
@@ -85,9 +85,13 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.05;
   letter-spacing: -0.03em;
+  background: linear-gradient(90deg, #ffffff 40%, var(--color-accent-1) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 12px rgba(220, 38, 38, 0.3));
 }
 
 a {

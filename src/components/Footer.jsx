@@ -6,7 +6,7 @@ const Footer = () => {
   return (
     <footer className="footer" id="footer">
       <div className="footer__container">
-        <span className="footer__logo">Smartketing</span>
+        <img src="logo.png" alt="Smartketing Logo" className="footer__logo" />
 
         <p className="footer__copy">&copy; {year} Smartketing. Toate drepturile rezervate.</p>
 

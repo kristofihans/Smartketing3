@@ -51,9 +51,7 @@ const Hero = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.2, duration: 1, ease: [0.16, 1, 0.3, 1] }}
       >
-        <p className="hero__scroll-text">
-          Hei, mai e ceva mișto de văzut aici!
-        </p>
+
         <div className="hero__scroll-icon">
           <span className="hero__chevron" style={{ '--chevron-base-opacity': 0.3 }} />
           <span className="hero__chevron" style={{ '--chevron-base-opacity': 0.6 }} />
