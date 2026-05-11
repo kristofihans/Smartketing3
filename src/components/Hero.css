@@ -26,10 +26,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0;
-}
-
-.hero__video--active {
   opacity: 1;
 }
 
@@ -46,6 +42,27 @@
     rgba(10, 10, 12, 0.85) 100%
   );
   pointer-events: none;
+}
+
+/* Center Logo */
+.hero__logo-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+.hero__logo {
+  max-width: 850px;
+  width: 95vw;
+  height: auto;
+  opacity: 1;
+  filter: drop-shadow(0 0 25px rgba(220, 38, 38, 0.6)) drop-shadow(0 0 60px rgba(220, 38, 38, 0.4));
 }
 
 /* Scroll Suggestion */
@@ -117,16 +134,48 @@
 /* Responsive */
 @media (max-width: 768px) {
   .hero {
-    height: 75vh;
-    height: 75svh; /* Better support for mobile toolbars */
+    height: auto;
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero__video-wrapper {
+    position: relative;
+    width: 100%;
+    height: auto;
+    inset: auto;
+  }
+
+  .hero__video {
+    position: relative;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    display: block;
+  }
+
+  .hero__overlay {
+    z-index: 1;
+  }
+
+  .hero__logo {
+    max-width: 80vw;
+  }
+
+  .hero__scroll-suggestion {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding-bottom: 1rem;
+    pointer-events: none;
   }
 
   .hero__scroll-text {
     font-size: 0.7rem;
-  }
-
-  .hero__scroll-suggestion {
-    padding-bottom: 0.75rem;
   }
 
   .hero__chevron {

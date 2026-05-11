@@ -6,7 +6,7 @@
 .outro {
   position: relative;
   padding: var(--space-3xl) var(--space-lg);
-  background: var(--color-bg);
+  background: transparent;
   color: #fff;
   text-align: center;
   overflow: hidden;

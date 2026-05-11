@@ -1,11 +1,8 @@
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import './Hero.css';
 
 const Hero = () => {
-  const forwardRef = useRef(null);
-  const reverseRef = useRef(null);
-  const [activeVideo, setActiveVideo] = useState('forward');
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -17,54 +14,35 @@ const Hero = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const handleForwardEnd = useCallback(() => {
-    setActiveVideo('reverse');
-    const rev = reverseRef.current;
-    if (rev) {
-      rev.currentTime = 0;
-      rev.play();
-    }
-  }, []);
-
-  const handleReverseEnd = useCallback(() => {
-    setActiveVideo('forward');
-    const fwd = forwardRef.current;
-    if (fwd) {
-      fwd.currentTime = 0;
-      fwd.play();
-    }
-  }, []);
-
-  const videoSrc = isMobile ? 'herobackgroundvideomobile.mp4' : 'herobackgroundvideo.mp4';
-  const reverseVideoSrc = isMobile ? 'herobackgroundvideomobilereverse.mp4' : 'herobackgroundvideoreverse.mp4';
+  const videoSrc = 'herobackgroundvideo.mp4';
 
   return (
     <section className="hero" id="hero">
-      {/* Video Background — Forward */}
+      {/* Video Background */}
       <div className="hero__video-wrapper">
         <video
-          ref={forwardRef}
-          className={`hero__video ${activeVideo === 'forward' ? 'hero__video--active' : ''}`}
+          className="hero__video"
           src={videoSrc}
           autoPlay
           muted
+          loop
           playsInline
           preload="auto"
-          onEnded={handleForwardEnd}
-        />
-        <video
-          ref={reverseRef}
-          className={`hero__video ${activeVideo === 'reverse' ? 'hero__video--active' : ''}`}
-          src={reverseVideoSrc}
-          muted
-          playsInline
-          preload="auto"
-          onEnded={handleReverseEnd}
         />
       </div>
 
       {/* Gradient Overlay */}
       <div className="hero__overlay" />
+
+      {/* Center Logo */}
+      <motion.div 
+        className="hero__logo-container"
+        initial={{ opacity: 0, scale: 0.9, x: "-50%", y: "-50%" }}
+        animate={{ opacity: 1, scale: 1, x: "-50%", y: "-50%" }}
+        transition={{ delay: 0.5, duration: 3, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <img src="logo.png" alt="Smartketing" className="hero__logo" />
+      </motion.div>
 
       {/* Scroll Suggestion */}
       <motion.div

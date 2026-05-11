@@ -6,13 +6,12 @@
 .portfolio-section {
   position: relative;
   padding: var(--space-3xl) var(--space-lg);
-  background: var(--color-bg);
+  background: transparent;
   overflow: hidden;
-  border-bottom: 1px solid var(--color-border);
 }
 
 .portfolio-section--elevated {
-  background: var(--color-bg-elevated);
+  background: transparent;
 }
 
 .section-container {

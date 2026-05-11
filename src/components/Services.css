@@ -5,8 +5,8 @@
 
 .services {
   position: relative;
-  height: 400vh; /* Deep scroll for animation sync */
-  background: var(--color-bg);
+  background: transparent;
+  padding: var(--space-3xl) 0;
 }
 
 /* Gradient transition from the first section */
@@ -24,57 +24,20 @@
 
 @media (max-width: 768px) {
   .services {
-    height: auto; /* Sync animation length with the actual content height */
+    height: auto;
   }
-}
-
-.services__background {
-  position: sticky;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  z-index: 1;
-  overflow: hidden;
-  background: #000;
-}
-
-.services__canvas-container {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.services__frame-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: brightness(0.8); /* Increased visibility */
-}
-
-.services__overlay {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at center, transparent 0%, rgba(10, 10, 12, 0.4) 100%);
-  z-index: 2;
 }
 
 /* Content over background */
 .services__content-wrapper {
-  position: sticky;
-  top: 0;
-  left: 0;
+  position: relative;
   width: 100%;
-  height: 100vh;
   z-index: 10;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--space-xl) var(--space-lg);
-  pointer-events: none; /* Only cards should be interactive */
+  padding: 0 var(--space-lg);
 }
 
 .services__header {
@@ -85,7 +48,7 @@
 
 .services__title {
   font-size: clamp(2.5rem, 6vw, 4.5rem);
-  font-weight: 700;
+  font-weight: 900;
   color: transparent;
   background-image: 
     linear-gradient(135deg, #ff4d4d 0%, #dc2626 50%, #7f1d1d 100%),
@@ -125,7 +88,7 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 0px;
+  border-radius: var(--radius-xl);
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
@@ -139,30 +102,7 @@
   transform: translateY(-4px);
 }
 
-.bento-card__top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-xs);
-}
 
-.bento-card__number {
-  font-family: var(--font-heading);
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.03);
-  line-height: 1;
-}
-
-.bento-card__icon-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(220, 38, 38, 0.04);
-}
 
 .bento-card__title {
   font-size: 1.1rem;

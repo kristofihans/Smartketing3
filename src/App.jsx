@@ -7,18 +7,21 @@ import PhotoPortfolio from './components/PhotoPortfolio';
 import WebPortfolio from './components/WebPortfolio';
 import Outro from './components/Outro';
 import Footer from './components/Footer';
+import FrameAnimation from './components/FrameAnimation';
 
 function App() {
   return (
     <div className="app">
       <Navbar />
       <Hero />
-      <Services />
-      <VideoPortfolio />
-      <PhotoPortfolio />
-      <WebPortfolio />
-      <Outro />
-      <Footer />
+      <FrameAnimation>
+        <Services />
+        <VideoPortfolio />
+        <PhotoPortfolio />
+        <WebPortfolio />
+        <Outro />
+        <Footer />
+      </FrameAnimation>
     </div>
   );
 }

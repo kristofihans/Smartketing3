@@ -1,5 +1,5 @@
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRef, useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { React } from 'react';
 import './Services.css';
 
 const services = [
@@ -42,57 +42,10 @@ const services = [
 ];
 
 const Services = () => {
-  const containerRef = useRef(null);
-  const startFrame = 11;
-  const endFrame = 120;
-  const [currentFrame, setCurrentFrame] = useState(startFrame);
-
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"]
-  });
-
-  // Map scroll progress to frame index (11 to 120)
-  const frameIndex = useTransform(scrollYProgress, [0, 1], [startFrame, endFrame]);
-
-  useEffect(() => {
-    const unsubscribe = frameIndex.on("change", (latest) => {
-      setCurrentFrame(Math.floor(latest));
-    });
-    return () => unsubscribe();
-  }, [frameIndex]);
-  
-  // Preload images
-  useEffect(() => {
-    const preloadImages = () => {
-      for (let i = startFrame; i <= endFrame; i++) {
-        const img = new Image();
-        const frameNum = String(i).padStart(3, '0');
-        img.src = `frames/ezgif-frame-${frameNum}.jpg`;
-      }
-    };
-    preloadImages();
-  }, []);
-
   return (
-    <section className="services" id="services" ref={containerRef}>
-      {/* Sticky Background Frame Animation */}
-      <div className="services__background">
-        <div className="services__canvas-container">
-          <img 
-            src={`frames/ezgif-frame-${String(currentFrame).padStart(3, '0')}.jpg`} 
-            alt="Animation Frame" 
-            className="services__frame-image"
-          />
-        </div>
-        {/* Dark overlay for text readability */}
-        <div className="services__overlay" />
-      </div>
-
+    <section className="services" id="services">
       {/* Content Layer */}
-      <motion.div 
-        className="services__content-wrapper"
-      >
+      <div className="services__content-wrapper">
         <div className="services__header">
           <h2 className="services__title">
             SERVICII
@@ -113,18 +66,12 @@ const Services = () => {
               viewport={{ once: true }}
               transition={{ delay: index * 0.1, duration: 0.8 }}
             >
-              <div className="bento-card__top">
-                <span className="bento-card__number">{s.id}</span>
-                <div className="bento-card__icon-container">
-                  <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--color-accent-1)' }}>+</span>
-                </div>
-              </div>
               <h3 className="bento-card__title">{s.title}</h3>
               <p className="bento-card__desc">{s.desc}</p>
             </motion.div>
           ))}
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 };
