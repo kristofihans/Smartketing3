@@ -36,7 +36,7 @@
 }
 
 .services__title {
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-size: clamp(3.5rem, 8vw, 6rem);
   font-weight: 900;
   color: transparent;
   background-image: 
