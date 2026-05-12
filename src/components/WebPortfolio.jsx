@@ -23,7 +23,7 @@ const WebPortfolio = () => {
 
         {/* Mockup Display */}
         <motion.div 
-          className="feature-media feature-media--landscape"
+          className="feature-media feature-media--portrait"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}

@@ -32,6 +32,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-xl);
+  position: relative;
+  z-index: 10;
 }
 
 .section-header {
@@ -53,9 +55,13 @@
 .section-title {
   font-size: clamp(2.5rem, 6vw, 4rem);
   font-weight: 700;
-  color: #fff;
+  color: transparent;
+  background: linear-gradient(135deg, #ffffff 10%, var(--color-accent-2) 40%, var(--color-accent-1) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
   margin-bottom: var(--space-md);
   line-height: 1.05;
+  filter: drop-shadow(0 0 15px rgba(220, 38, 38, 0.5)) drop-shadow(0 0 30px rgba(220, 38, 38, 0.2));
 }
 
 /* Feature Media (Hero Video/Photo/Mockup) */

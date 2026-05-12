@@ -24,8 +24,7 @@ const PhotoPortfolio = () => {
 
         {/* Hero Photograph */}
         <motion.div 
-          className="feature-media feature-media--full"
-          style={{ maxWidth: '600px', margin: '0 auto' }}
+          className="feature-media feature-media--portrait"
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
