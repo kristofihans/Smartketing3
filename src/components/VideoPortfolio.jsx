@@ -19,7 +19,8 @@ const VideoPortfolio = () => {
           className="section-header"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, delay: 0.2 }}
         >
           <h2 className="section-title">Visual Stories</h2>
         </motion.div>
@@ -29,8 +30,8 @@ const VideoPortfolio = () => {
           className="feature-media feature-media--portrait"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 1, delay: 0.4 }}
         >
           <video 
             src="video.mp4" 
