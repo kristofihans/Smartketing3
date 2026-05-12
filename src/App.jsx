@@ -8,6 +8,7 @@ import WebPortfolio from './components/WebPortfolio';
 import Outro from './components/Outro';
 import Footer from './components/Footer';
 import FrameAnimation from './components/FrameAnimation';
+import WhatsAppButton from './components/WhatsAppButton';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Outro />
         <Footer />
       </FrameAnimation>
+      <WhatsAppButton />
     </div>
   );
 }

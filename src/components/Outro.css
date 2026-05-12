@@ -76,12 +76,15 @@
   margin-bottom: var(--space-xl);
 }
 
-@media (max-width: 768px) {
   .credits__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--space-xl);
+    width: 100%;
   }
   
   .client-logo {
-    font-size: 1rem;
+    font-size: 0.95rem;
+    opacity: 0.6;
   }
 }

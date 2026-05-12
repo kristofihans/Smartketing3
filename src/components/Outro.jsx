@@ -13,7 +13,7 @@ const clients = [
 
 const Outro = () => {
   return (
-    <section className="outro" id="contact">
+    <section className="outro">
       <div className="credits">
         <div className="credits__grid">
           {clients.map((client, i) => (
@@ -40,6 +40,7 @@ const Outro = () => {
 
       <motion.div
         className="contact__container"
+        id="contact"
         initial={{ opacity: 0, y: 50, filter: 'blur(8px)' }}
         whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
         viewport={{ once: true, amount: 0.2 }}

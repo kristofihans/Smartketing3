@@ -40,7 +40,7 @@
   font-weight: 900;
   color: transparent;
   background-image: 
-    linear-gradient(135deg, #ff4d4d 0%, #dc2626 50%, #7f1d1d 100%),
+    linear-gradient(135deg, #ffffff 0%, #ef4444 60%, #dc2626 100%),
     url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   background-blend-mode: overlay;
   -webkit-background-clip: text;
@@ -104,7 +104,7 @@
 
 .bento-card__desc {
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.65);
   line-height: 1.6;
 }
 

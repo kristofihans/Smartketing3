@@ -138,15 +138,17 @@
 
 @media (max-width: 768px) {
   .navbar {
+    position: absolute;
     padding: 0.8rem 1.2rem;
+    justify-content: flex-end;
   }
 
   .navbar--scrolled {
     padding: 0.5rem 1.2rem;
   }
 
-  .navbar__logo-img {
-    height: 50px;
+  .navbar__logo {
+    display: none;
   }
 
   .navbar__links {
@@ -204,8 +206,8 @@
   }
 
   .navbar__mobile-cta {
-    padding: 0.9rem 2.4rem;
-    font-size: 0.85rem;
+    padding: 0.75rem 2rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: #fff;
     background: var(--gradient-button);

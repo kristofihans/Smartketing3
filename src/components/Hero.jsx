@@ -51,12 +51,13 @@ const Hero = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.2, duration: 1, ease: [0.16, 1, 0.3, 1] }}
       >
-
-        <div className="hero__scroll-icon">
-          <span className="hero__chevron" style={{ '--chevron-base-opacity': 0.3 }} />
-          <span className="hero__chevron" style={{ '--chevron-base-opacity': 0.6 }} />
-          <span className="hero__chevron" style={{ '--chevron-base-opacity': 1 }} />
-        </div>
+        <a href="#contact" className="hero__contact-link">
+          <div className="hero__scroll-icon">
+            <span className="hero__chevron" style={{ '--chevron-base-opacity': 0.3 }} />
+            <span className="hero__chevron" style={{ '--chevron-base-opacity': 0.6 }} />
+            <span className="hero__chevron" style={{ '--chevron-base-opacity': 1 }} />
+          </div>
+        </a>
       </motion.div>
 
     </section>

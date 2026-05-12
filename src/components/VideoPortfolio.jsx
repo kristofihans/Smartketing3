@@ -1,21 +1,9 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import './Portfolio.css';
 
 const VideoPortfolio = () => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const { scrollY } = useScroll();
-  // On mobile, fade in from scroll 50 to 300
-  const mobileOpacity = useTransform(scrollY, [50, 300], [0, 1]);
 
   const additionalVideos = [
     'video2.mp4',
@@ -26,10 +14,7 @@ const VideoPortfolio = () => {
 
   return (
     <section className="portfolio-section portfolio-section--first" id="video">
-      <motion.div 
-        className="section-container"
-        style={{ opacity: isMobile ? mobileOpacity : 1 }}
-      >
+      <div className="section-container">
         <motion.div 
           className="section-header"
           initial={{ opacity: 0, y: 20 }}
@@ -94,7 +79,7 @@ const VideoPortfolio = () => {
             </svg>
           </button>
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 };

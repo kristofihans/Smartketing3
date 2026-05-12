@@ -120,6 +120,34 @@
   opacity: 1;
 }
 
+.hero__contact-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  text-decoration: none;
+  pointer-events: auto;
+  transition: var(--transition-base);
+}
+
+.hero__contact-text {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  opacity: 0.8;
+  transition: var(--transition-fast);
+  text-shadow: 0 0 20px rgba(220, 38, 38, 0.4);
+}
+
+.hero__contact-link:hover .hero__contact-text {
+  opacity: 1;
+  color: var(--color-accent-1);
+  transform: translateY(-2px);
+}
+
 @keyframes chevronBounce {
   0%, 100% {
     transform: rotate(45deg) translateY(0);

@@ -1,4 +1,4 @@
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';
 import './FrameAnimation.css';
 
@@ -12,8 +12,19 @@ const FrameAnimation = ({ children }) => {
     offset: ["-100vh start", "end end"]
   });
 
-  // Map scroll progress to frame index (1 to 236)
-  const frameIndex = useTransform(scrollYProgress, [0, 1], [1, frameCount]);
+  // Smooth the scroll progress for a high-end feel
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 40,
+    damping: 20,
+    restDelta: 0.0001
+  });
+
+  // Map smooth progress to frame index with "stops" (plateaus) at section boundaries
+  const frameIndex = useTransform(
+    smoothProgress, 
+    [0, 0.18, 0.22, 0.43, 0.47, 0.68, 0.72, 0.93, 1],
+    [1, 60, 60, 120, 120, 180, 180, 236, 236]
+  );
 
   useEffect(() => {
     const unsubscribe = frameIndex.on("change", (latest) => {
