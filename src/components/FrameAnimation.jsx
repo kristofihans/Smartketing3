@@ -1,4 +1,4 @@
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef, useEffect, useMemo } from 'react';
 import './FrameAnimation.css';
 
@@ -6,30 +6,20 @@ const FrameAnimation = ({ children }) => {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
   const imagesRef = useRef([]);
-  const totalFrames = 236;
-  const skipFactor = 2; // Skip every 2nd frame for 2x performance
-  const frameCount = Math.floor(totalFrames / skipFactor);
+  const frameCount = 236;
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["-100vh start", "end end"]
   });
 
-  const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 50,
-    restDelta: 0.0001
-  });
+  const frameIndex = useTransform(scrollYProgress, [0, 1], [1, frameCount]);
 
-  const frameIndex = useTransform(smoothProgress, [0, 1], [1, frameCount]);
-
-  // Preload optimized frame set
+  // Preload images into a ref to avoid React state lag
   useEffect(() => {
     for (let i = 1; i <= frameCount; i++) {
       const img = new Image();
-      // Map back to original filename sequence (006, 008, 010...)
-      const originalIndex = ((i - 1) * skipFactor) + 6;
-      const frameNum = String(originalIndex).padStart(3, '0');
+      const frameNum = String(i + 5).padStart(3, '0');
       img.src = `frames/ezgif-frame-${frameNum}.jpg`;
       imagesRef.current[i] = img;
     }
@@ -39,7 +29,7 @@ const FrameAnimation = ({ children }) => {
   const drawImage = (index) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d', { alpha: false });
+    const ctx = canvas.getContext('2d', { alpha: false }); // Performance optimization
     const img = imagesRef.current[index];
     
     if (img && img.complete) {
@@ -58,11 +48,12 @@ const FrameAnimation = ({ children }) => {
     }
   };
 
-  // Handle Canvas Resizing - 0.5x resolution for extreme speed
+  // Handle Canvas Resizing - Use a lower internal resolution for speed
   useEffect(() => {
     const handleResize = () => {
       if (canvasRef.current) {
-        const scale = 0.5; 
+        // Render at 0.75x resolution for better performance on high-DPI screens
+        const scale = 0.75; 
         canvasRef.current.width = window.innerWidth * scale;
         canvasRef.current.height = window.innerHeight * scale;
         drawImage(Math.floor(frameIndex.get()));
@@ -78,6 +69,7 @@ const FrameAnimation = ({ children }) => {
   // Direct drawing on scroll change
   useEffect(() => {
     const unsubscribe = frameIndex.on("change", (latest) => {
+      // Use requestAnimationFrame to sync with display refresh rate
       requestAnimationFrame(() => drawImage(Math.floor(latest)));
     });
     return () => unsubscribe();

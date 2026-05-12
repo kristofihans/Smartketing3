@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import './Hero.css';
 
 const Hero = () => {
   const [isMobile, setIsMobile] = useState(false);
+  const videoRef = useRef(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -14,6 +15,13 @@ const Hero = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Slow down the hero video for a cinematic feel
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.playbackRate = 0.85;
+    }
+  }, []);
+
   const videoSrc = 'herobackgroundvideo.mp4';
 
   return (
@@ -21,6 +29,7 @@ const Hero = () => {
       {/* Video Background */}
       <div className="hero__video-wrapper">
         <video
+          ref={videoRef}
           className="hero__video"
           src={videoSrc}
           autoPlay
