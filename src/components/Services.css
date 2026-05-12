@@ -127,16 +127,27 @@
   .services__content-wrapper {
     position: relative;
     height: auto;
-    padding-top: 10vh;
+    padding-top: 5vh;
     padding-bottom: 10vh;
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+  }
+
+  .services__header {
+    margin-bottom: var(--space-lg);
   }
 
   .services__grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-sm);
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
   }
 
   .span-2, .span-1 {
     grid-column: span 1;
+  }
+
+  .bento-card {
+    padding: var(--space-md) var(--space-lg);
+    border-radius: 20px;
   }
 }
