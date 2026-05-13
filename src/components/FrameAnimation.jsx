@@ -1,9 +1,19 @@
 import { useRef, useEffect } from 'react';
 import './FrameAnimation.css';
 
-const FRAME_COUNT = 236;
+const DESKTOP_FRAME_COUNT = 236;
+const MOBILE_FRAME_COUNT = 121;
+const MOBILE_BREAKPOINT = 768;
 const LERP_SPEED = 0.3;        // How fast the display chases the scroll
 const CANVAS_SCALE = 0.5;      // Render at half resolution for speed
+
+/** Return the src path for a given frame index on each device class */
+const desktopSrc = (i) =>
+  `frames/ezgif-frame-${String(i + 5).padStart(3, '0')}.webp`;
+const mobileSrc = (i) =>
+  `framesmobile/ezgif-frame-${String(i).padStart(3, '0')}.jpg`;
+
+const isMobileViewport = () => window.innerWidth <= MOBILE_BREAKPOINT;
 
 const FrameAnimation = ({ children }) => {
   const containerRef = useRef(null);
@@ -19,27 +29,41 @@ const FrameAnimation = ({ children }) => {
     running: false,
     cw: 0,
     ch: 0,
+    isMobile: false,
+    frameCount: DESKTOP_FRAME_COUNT,
   });
 
-  // ─── Preload all frame images ───────────────────────────────
-  useEffect(() => {
+  // ─── Preload frame images for the given device class ────────
+  const loadFrames = (mobile) => {
     const s = state.current;
-    for (let i = 1; i <= FRAME_COUNT; i++) {
+    const count = mobile ? MOBILE_FRAME_COUNT : DESKTOP_FRAME_COUNT;
+    const srcFn = mobile ? mobileSrc : desktopSrc;
+
+    s.isMobile = mobile;
+    s.frameCount = count;
+    s.images = [];
+
+    for (let i = 1; i <= count; i++) {
       const img = new Image();
       img.decoding = 'async';
-      img.src = `frames/ezgif-frame-${String(i + 5).padStart(3, '0')}.webp`;
+      img.src = srcFn(i);
       s.images[i] = img;
     }
     // Eagerly decode the first batch so frame 1 is ready instantly
-    for (let i = 1; i <= Math.min(40, FRAME_COUNT); i++) {
+    for (let i = 1; i <= Math.min(40, count); i++) {
       if (s.images[i].decode) s.images[i].decode().catch(() => {});
     }
+  };
+
+  // ─── Initial frame preload ──────────────────────────────────
+  useEffect(() => {
+    loadFrames(isMobileViewport());
   }, []);
 
   // ─── Draw a single frame to canvas ──────────────────────────
   const draw = (index) => {
     const s = state.current;
-    const idx = Math.max(1, Math.min(FRAME_COUNT, Math.round(index)));
+    const idx = Math.max(1, Math.min(s.frameCount, Math.round(index)));
     if (idx === s.lastDrawn) return;
     s.lastDrawn = idx;
 
@@ -80,7 +104,7 @@ const FrameAnimation = ({ children }) => {
     }
   };
 
-  // ─── Canvas setup + resize ──────────────────────────────────
+  // ─── Canvas setup + resize (also swaps frame sets) ──────────
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -89,6 +113,16 @@ const FrameAnimation = ({ children }) => {
     s.ctx = canvas.getContext('2d', { alpha: false });
 
     const onResize = () => {
+      const mobile = isMobileViewport();
+
+      // If the device class changed, reload the correct frame set
+      if (mobile !== s.isMobile) {
+        loadFrames(mobile);
+        // Re-clamp current/target to new frame range
+        s.current = Math.min(s.current, s.frameCount);
+        s.target = Math.min(s.target, s.frameCount);
+      }
+
       s.cw = Math.round(window.innerWidth * CANVAS_SCALE);
       s.ch = Math.round(window.innerHeight * CANVAS_SCALE);
       canvas.width = s.cw;
@@ -113,7 +147,8 @@ const FrameAnimation = ({ children }) => {
       // progress 0 → 1 as you scroll through the section
       const progress = Math.max(0, Math.min(1, (vh - rect.top) / el.offsetHeight));
 
-      state.current.target = 1 + progress * (FRAME_COUNT - 1);
+      const s = state.current;
+      s.target = 1 + progress * (s.frameCount - 1);
       ensureRunning();
     };
 
