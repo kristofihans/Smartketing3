@@ -1,17 +1,17 @@
 import { useRef, useEffect } from 'react';
 import './FrameAnimation.css';
 
-const DESKTOP_FRAME_COUNT = 236;
-const MOBILE_FRAME_COUNT = 121;
+const DESKTOP_FRAME_COUNT = 240;
+const MOBILE_FRAME_COUNT = 240; // Fallback to desktop count if no separate mobile frames
 const MOBILE_BREAKPOINT = 768;
 const LERP_SPEED = 0.3;        // How fast the display chases the scroll
 const CANVAS_SCALE = 0.5;      // Render at half resolution for speed
 
 /** Return the src path for a given frame index on each device class */
 const desktopSrc = (i) =>
-  `frames/ezgif-frame-${String(i + 5).padStart(3, '0')}.webp`;
+  `frames/ezgif-frame-${String(i).padStart(3, '0')}.webp`;
 const mobileSrc = (i) =>
-  `framesmobile/ezgif-frame-${String(i).padStart(3, '0')}.jpg`;
+  `frames/ezgif-frame-${String(i).padStart(3, '0')}.webp`;
 
 const isMobileViewport = () => window.innerWidth <= MOBILE_BREAKPOINT;
 

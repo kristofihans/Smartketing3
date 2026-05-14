@@ -7,8 +7,8 @@ import PhotoPortfolio from './components/PhotoPortfolio';
 import WebPortfolio from './components/WebPortfolio';
 import Outro from './components/Outro';
 import Footer from './components/Footer';
-import FrameAnimation from './components/FrameAnimation';
 import WhatsAppButton from './components/WhatsAppButton';
+import FrameAnimation from './components/FrameAnimation';
 
 function App() {
   return (
@@ -16,12 +16,14 @@ function App() {
       <Navbar />
       <Hero />
       <FrameAnimation>
-        <VideoPortfolio />
-        <PhotoPortfolio />
-        <WebPortfolio />
-        <Services />
-        <Outro />
-        <Footer />
+        <div className="app__content">
+          <VideoPortfolio />
+          <PhotoPortfolio />
+          <WebPortfolio />
+          <Services />
+          <Outro />
+          <Footer />
+        </div>
       </FrameAnimation>
       <WhatsAppButton />
     </div>
@@ -29,3 +31,4 @@ function App() {
 }
 
 export default App;
+

@@ -4,6 +4,12 @@
   min-height: 100vh;
 }
 
+/* Content sits above the fixed Three.js canvas */
+.app__content {
+  position: relative;
+  z-index: 1;
+}
+
 /* Noise / Grain Texture Overlay — tactile feel */
 .app::after {
   content: '';
@@ -17,3 +23,4 @@
   background-size: 128px 128px;
   mix-blend-mode: overlay;
 }
+
