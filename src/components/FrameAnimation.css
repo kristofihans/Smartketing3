@@ -34,8 +34,10 @@
   width: 100%;
   height: 100%;
   display: block;
-  will-change: contents;
+  will-change: contents, opacity;
   contain: strict;
+  opacity: var(--animation-opacity, 0);
+  transition: opacity 0.5s ease;
 }
 
 .frame-animation__overlay {
