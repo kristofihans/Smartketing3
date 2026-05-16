@@ -5,7 +5,7 @@ const DESKTOP_FRAME_COUNT = 240;
 const MOBILE_FRAME_COUNT = 240; // Fallback to desktop count if no separate mobile frames
 const MOBILE_BREAKPOINT = 768;
 const LERP_SPEED = 0.3;        // How fast the display chases the scroll
-const CANVAS_SCALE = 0.4;      // Reduced from 0.5 for smoother rendering
+const CANVAS_SCALE = 0.5;      // Render at half resolution for speed
 
 /** Return the src path for a given frame index on each device class */
 const desktopSrc = (i) =>
@@ -33,7 +33,7 @@ const FrameAnimation = ({ children }) => {
     frameCount: DESKTOP_FRAME_COUNT,
   });
 
-  // ─── Preload frame images with staggered priority ──────────
+  // ─── Preload frame images for the given device class ────────
   const loadFrames = (mobile) => {
     const s = state.current;
     const count = mobile ? MOBILE_FRAME_COUNT : DESKTOP_FRAME_COUNT;
@@ -43,51 +43,21 @@ const FrameAnimation = ({ children }) => {
     s.frameCount = count;
     s.images = [];
 
-    // Phase 1: Create image objects immediately but don't set src for all
     for (let i = 1; i <= count; i++) {
-      s.images[i] = new Image();
-      s.images[i].decoding = 'async';
+      const img = new Image();
+      img.decoding = 'async';
+      img.src = srcFn(i);
+      s.images[i] = img;
     }
-
-    // Phase 2: Prioritize the first 10 frames for instant visual
-    for (let i = 1; i <= Math.min(10, count); i++) {
-      s.images[i].src = srcFn(i);
-      s.images[i].decode().catch(() => {});
+    // Eagerly decode the first batch so frame 1 is ready instantly
+    for (let i = 1; i <= Math.min(40, count); i++) {
+      if (s.images[i].decode) s.images[i].decode().catch(() => {});
     }
-
-    // Phase 3: Stagger the rest to prevent network saturation
-    // This allows the Hero video and other critical assets to load first
-    let currentBatch = 11;
-    const batchSize = 15;
-    
-    const loadNextBatch = () => {
-      if (currentBatch > count) return;
-      const end = Math.min(currentBatch + batchSize, count);
-      
-      for (let i = currentBatch; i <= end; i++) {
-        s.images[i].src = srcFn(i);
-      }
-      
-      currentBatch = end + 1;
-      // Use requestIdleCallback or a small timeout to keep main thread free
-      if (window.requestIdleCallback) {
-        window.requestIdleCallback(loadNextBatch);
-      } else {
-        setTimeout(loadNextBatch, 100);
-      }
-    };
-
-    // Delay the bulk loading slightly to give the Hero priority
-    setTimeout(loadNextBatch, 1500);
   };
 
-  // ─── Initial frame preload (Delayed) ────────────────────────
+  // ─── Initial frame preload ──────────────────────────────────
   useEffect(() => {
-    // Wait for the page to settle before hammering the network
-    const timer = setTimeout(() => {
-      loadFrames(isMobileViewport());
-    }, 500);
-    return () => clearTimeout(timer);
+    loadFrames(isMobileViewport());
   }, []);
 
   // ─── Draw a single frame to canvas ──────────────────────────
@@ -100,15 +70,6 @@ const FrameAnimation = ({ children }) => {
     const { ctx, cw, ch } = s;
     const img = s.images[idx];
     if (!ctx || !img || !img.complete || !img.naturalWidth) return;
-
-    // Predictive decoding: Start decoding the next few frames in the direction of travel
-    const direction = index > s.current ? 1 : -1;
-    for (let i = 1; i <= 3; i++) {
-      const nextIdx = idx + i * direction;
-      if (s.images[nextIdx] && !s.images[nextIdx].complete) {
-        s.images[nextIdx].decode().catch(() => {});
-      }
-    }
 
     const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
     const w = img.naturalWidth * scale;
@@ -188,12 +149,6 @@ const FrameAnimation = ({ children }) => {
 
       const s = state.current;
       s.target = 1 + progress * (s.frameCount - 1);
-      
-      // Update opacity based on scroll progress
-      // Fades in over the first 15% of the scroll
-      const opacity = Math.min(1, progress / 0.15);
-      el.style.setProperty('--animation-opacity', opacity);
-      
       ensureRunning();
     };
 
