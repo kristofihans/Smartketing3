@@ -5,173 +5,113 @@ import './FrameBackground.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const TOTAL_FRAMES_1 = 120; // frames2 folder
-const START_FRAME_1 = 1;
-
-const TOTAL_FRAMES_2 = 235; // frames folder
-const START_FRAME_2 = 6;
+const TOTAL_FRAMES = 294; // frames from animationframes folder
+const START_FRAME = 1;
 
 const FrameBackground = () => {
-  const canvas1Ref = useRef(null);
-  const canvas2Ref = useRef(null);
+  const canvasRef = useRef(null);
 
   useEffect(() => {
-    const canvas1 = canvas1Ref.current;
-    const canvas2 = canvas2Ref.current;
-    if (!canvas1 || !canvas2) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    const ctx1 = canvas1.getContext('2d');
-    const ctx2 = canvas2.getContext('2d');
-    if (!ctx1 || !ctx2) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-    const images1 = [];
-    const images2 = [];
+    // Array to hold the preloaded Image objects
+    const images = [];
 
-    let currentImg1 = null;
-    let currentImg2 = null;
-    let renderRequested1 = false;
-    let renderRequested2 = false;
+    // Store the current frame index
+    const animState = { frame: 0 };
+    let renderRequested = false;
 
-    const renderFrame1 = () => {
-      renderRequested1 = false;
-      if (currentImg1 && currentImg1.complete && currentImg1.naturalWidth !== 0) {
-        if (canvas1.width !== currentImg1.width || canvas1.height !== currentImg1.height) {
-          canvas1.width = currentImg1.width;
-          canvas1.height = currentImg1.height;
+    // Function to render the current frame
+    const renderFrame = () => {
+      renderRequested = false;
+      const img = images[animState.frame];
+      if (img && img.complete && img.naturalWidth !== 0) {
+        // Match canvas internal resolution to the image
+        if (canvas.width !== img.width || canvas.height !== img.height) {
+          canvas.width = img.width;
+          canvas.height = img.height;
         }
-        ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
-        ctx1.drawImage(currentImg1, 0, 0);
-      }
-    };
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
 
-    const renderFrame2 = () => {
-      renderRequested2 = false;
-      if (currentImg2 && currentImg2.complete && currentImg2.naturalWidth !== 0) {
-        if (canvas2.width !== currentImg2.width || canvas2.height !== currentImg2.height) {
-          canvas2.width = currentImg2.width;
-          canvas2.height = currentImg2.height;
+        // Frame index 216 corresponds to ezgif-frame-217.jpg
+        // Apply a smooth dark overlay from this frame onwards
+        if (animState.frame >= 216) {
+          // Fade to 70% opacity over 10 frames for a smooth transition, avoiding an abrupt flicker
+          const fadeProgress = Math.min(1, (animState.frame - 216) / 10);
+          ctx.fillStyle = `rgba(0, 0, 0, ${fadeProgress * 0.7})`;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
-        ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
-        ctx2.drawImage(currentImg2, 0, 0);
       }
     };
 
-    const requestRender1 = (img) => {
-      if (!img) return;
-      currentImg1 = img;
-      if (!renderRequested1) {
-        renderRequested1 = true;
-        requestAnimationFrame(renderFrame1);
+    const requestRender = () => {
+      if (!renderRequested) {
+        renderRequested = true;
+        requestAnimationFrame(renderFrame);
       }
     };
 
-    const requestRender2 = (img) => {
-      if (!img) return;
-      currentImg2 = img;
-      if (!renderRequested2) {
-        renderRequested2 = true;
-        requestAnimationFrame(renderFrame2);
-      }
-    };
-
-    // Preload Sequence 1
-    for (let i = 0; i < TOTAL_FRAMES_1; i++) {
+    // Preload all frames from animationframes folder
+    for (let i = 0; i < TOTAL_FRAMES; i++) {
       const img = new Image();
-      const frameNum = String(START_FRAME_1 + i).padStart(3, '0');
-      img.src = `frames2/ezgif-frame-${frameNum}.jpg`;
+      const frameNum = String(START_FRAME + i).padStart(3, '0');
+      img.src = `animationframes/ezgif-frame-${frameNum}.jpg`;
+
       img.onload = () => {
-        if (i === 0 && !currentImg1) requestRender1(img);
+        // As soon as the first frame loads, render it initially
+        if (i === 0 && animState.frame === 0) {
+          requestRender();
+        }
       };
-      images1.push(img);
+
+      images.push(img);
     }
 
-    // Preload Sequence 2
-    for (let i = 0; i < TOTAL_FRAMES_2; i++) {
-      const img = new Image();
-      const frameNum = String(START_FRAME_2 + i).padStart(3, '0');
-      img.src = `frames/ezgif-frame-${frameNum}.webp`;
-      img.onload = () => {
-        // Draw the first frame of sequence 2 immediately so it's ready when fading in
-        if (i === 0 && !currentImg2) requestRender2(img);
-      };
-      images2.push(img);
-    }
-
-    // --- SETUP SCROLL TRIGGERS ---
-
-    // Trigger 1: #video -> #photo (Scrubs sequence 1)
-    const trigger1 = ScrollTrigger.create({
-      trigger: '#video',
-      endTrigger: '#photo',
-      start: 'top bottom',
-      end: 'bottom bottom',
+    // Set up a single GSAP ScrollTrigger across the entire app__content
+    const scrollTarget = document.querySelector('.app__content');
+    
+    const trigger = ScrollTrigger.create({
+      trigger: scrollTarget,
+      start: 'top bottom', // Start scrubbing when app__content enters from bottom
+      end: 'bottom bottom',   // End when the bottom of app__content reaches bottom of viewport
       scrub: 0.5,
       onUpdate: (self) => {
-        const frameIndex = Math.min(
-          TOTAL_FRAMES_1 - 1,
-          Math.floor(self.progress * TOTAL_FRAMES_1)
+        const nextFrame = Math.min(
+          TOTAL_FRAMES - 1,
+          Math.floor(self.progress * TOTAL_FRAMES)
         );
-        requestRender1(images1[frameIndex]);
+        
+        if (animState.frame !== nextFrame) {
+          animState.frame = nextFrame;
+          requestRender();
+        }
       },
     });
 
-    // Trigger 2: #web -> bottom of .app__content (Scrubs sequence 2)
-    // We start it scrubbing as soon as #web comes into view.
-    const trigger2 = ScrollTrigger.create({
-      trigger: '#web',
-      endTrigger: '.app__content',
-      start: 'top bottom',
-      end: 'bottom bottom',
-      scrub: 0.5,
-      onUpdate: (self) => {
-        const frameIndex = Math.min(
-          TOTAL_FRAMES_2 - 1,
-          Math.floor(self.progress * TOTAL_FRAMES_2)
-        );
-        requestRender2(images2[frameIndex]);
-      },
-    });
-
-    // Trigger 3: Crossfade Canvas Opacity
-    // Fades between the two canvases exactly as the user transitions from #photo to #web
-    const fadeTrigger = gsap.to(canvas2, {
-      opacity: 1,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: '#web',
-        start: 'top bottom', // Start fading when #web enters viewport
-        end: 'top top',      // Finish fading when #web hits top of viewport
-        scrub: true,
-      }
-    });
-
-    // Handle ResizeObserver
-    const appContent = document.querySelector('.app__content');
+    // Handle ResizeObserver for dynamic heights
     let resizeObserver;
-    if (appContent && window.ResizeObserver) {
+    if (scrollTarget && window.ResizeObserver) {
       resizeObserver = new ResizeObserver(() => {
         ScrollTrigger.refresh();
       });
-      resizeObserver.observe(appContent);
+      resizeObserver.observe(scrollTarget);
     }
 
+    // Cleanup
     return () => {
-      trigger1.kill();
-      trigger2.kill();
-      if (fadeTrigger.scrollTrigger) fadeTrigger.scrollTrigger.kill();
-      fadeTrigger.kill();
-      if (resizeObserver && appContent) {
-        resizeObserver.unobserve(appContent);
+      trigger.kill();
+      if (resizeObserver && scrollTarget) {
+        resizeObserver.unobserve(scrollTarget);
       }
     };
   }, []);
 
-  return (
-    <div className="frame-background-wrapper">
-      <canvas ref={canvas1Ref} className="frame-background frame-background--seq1" />
-      <canvas ref={canvas2Ref} className="frame-background frame-background--seq2" />
-    </div>
-  );
+  return <canvas ref={canvasRef} className="frame-background" />;
 };
 
 export default FrameBackground;

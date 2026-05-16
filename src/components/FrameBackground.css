@@ -2,7 +2,7 @@
    FRAME BACKGROUND — Scroll-based animation
    ======================================== */
 
-.frame-background-wrapper {
+.frame-background {
   position: fixed;
   top: 0;
   left: 0;
@@ -10,25 +10,7 @@
   height: 100vh;
   z-index: 0;
   pointer-events: none;
-  background-color: #050505;
-}
-
-.frame-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
   object-fit: cover;
-  will-change: opacity;
-}
-
-.frame-background--seq1 {
-  z-index: 1;
-  opacity: 1; /* Always visible, seq2 fades over it */
-}
-
-.frame-background--seq2 {
-  z-index: 2;
-  opacity: 0; /* Starts hidden, fades in via GSAP */
+  opacity: 1;
+  background-color: #050505;
 }
