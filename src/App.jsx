@@ -8,23 +8,22 @@ import WebPortfolio from './components/WebPortfolio';
 import Outro from './components/Outro';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
-import FrameAnimation from './components/FrameAnimation';
+import FrameBackground from './components/FrameBackground';
 
 function App() {
   return (
     <div className="app">
+      <FrameBackground />
       <Navbar />
       <Hero />
-      <FrameAnimation>
-        <div className="app__content">
-          <VideoPortfolio />
-          <PhotoPortfolio />
-          <WebPortfolio />
-          <Services />
-          <Outro />
-          <Footer />
-        </div>
-      </FrameAnimation>
+      <div className="app__content">
+        <VideoPortfolio />
+        <PhotoPortfolio />
+        <WebPortfolio />
+        <Services />
+        <Outro />
+        <Footer />
+      </div>
       <WhatsAppButton />
     </div>
   );

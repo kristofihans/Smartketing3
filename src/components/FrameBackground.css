@@ -1,0 +1,16 @@
+/* ========================================
+   FRAME BACKGROUND — Scroll-based animation
+   ======================================== */
+
+.frame-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  object-fit: cover;
+  opacity: 1;
+  background-color: #050505; /* Fallback */
+}
