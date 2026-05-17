@@ -4,7 +4,6 @@ import './Hero.css';
 
 const Hero = () => {
   const [isMobile, setIsMobile] = useState(false);
-  const [isVideoReady, setIsVideoReady] = useState(false);
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -20,22 +19,13 @@ const Hero = () => {
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.playbackRate = 0.85;
-      
-      // Check if video is already loaded (from cache)
-      if (videoRef.current.readyState >= 3) {
-        setIsVideoReady(true);
-      }
     }
   }, []);
-
-  const handleVideoLoad = () => {
-    setIsVideoReady(true);
-  };
 
   const videoSrc = 'herobackgroundvideo.mp4';
 
   return (
-    <section className={`hero ${isVideoReady ? 'hero--loaded' : ''}`} id="hero">
+    <section className="hero" id="hero">
       {/* Video Background */}
       <div className="hero__video-wrapper">
         <video
@@ -47,7 +37,6 @@ const Hero = () => {
           loop
           playsInline
           preload="auto"
-          onLoadedData={handleVideoLoad}
         />
       </div>
 
@@ -55,14 +44,9 @@ const Hero = () => {
       <div className="hero__overlay" />
 
       {/* Center Logo */}
-      <motion.div 
-        className="hero__logo-container"
-        initial={{ opacity: 0, scale: 0.9, x: "-50%", y: "-50%" }}
-        animate={{ opacity: 1, scale: 1, x: "-50%", y: "-50%" }}
-        transition={{ delay: 0.2, duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
-      >
+      <div className="hero__logo-container">
         <img src="logo.png" alt="Smartketing" className="hero__logo" />
-      </motion.div>
+      </div>
 
       {/* Scroll Suggestion */}
       <motion.div
