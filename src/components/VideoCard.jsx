@@ -1,10 +1,10 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import './Portfolio.css';
 
-const VideoCard = ({ src }) => {
+const VideoCard = ({ src, autoPlay = false }) => {
   const videoRef = useRef(null);
   const progressRef = useRef(null);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(autoPlay);
   const [progress, setProgress] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
   const [showControls, setShowControls] = useState(false);
@@ -89,7 +89,7 @@ const VideoCard = ({ src }) => {
       <video
         ref={videoRef}
         src={src}
-        autoPlay
+        autoPlay={autoPlay}
         muted
         loop
         playsInline

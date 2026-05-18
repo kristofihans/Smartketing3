@@ -5,7 +5,7 @@ import './FrameBackground.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const TOTAL_FRAMES = 241; // frames from newanimation folder
+const TOTAL_FRAMES = 187; // frames from bestframes folder
 const START_FRAME = 1;
 
 const FrameBackground = () => {
@@ -38,11 +38,11 @@ const FrameBackground = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0);
 
-        // Frame index 216 corresponds to ezgif-frame-217.jpg
-        // Apply a smooth dark overlay from this frame onwards
-        if (animState.frame >= 216) {
-          // Fade to 70% opacity over 10 frames for a smooth transition, avoiding an abrupt flicker
-          const fadeProgress = Math.min(1, (animState.frame - 216) / 10);
+        // Frame index 165 corresponds to ezgif-frame-166.jpg
+        // Apply a smooth dark overlay from this frame onwards to transition to black
+        if (animState.frame >= 165) {
+          // Fade to 70% opacity over 20 frames for a smooth transition, avoiding an abrupt flicker
+          const fadeProgress = Math.min(1, (animState.frame - 165) / 20);
           ctx.fillStyle = `rgba(0, 0, 0, ${fadeProgress * 0.7})`;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
@@ -60,7 +60,7 @@ const FrameBackground = () => {
     for (let i = 0; i < TOTAL_FRAMES; i++) {
       const img = new Image();
       const frameNum = String(START_FRAME + i).padStart(3, '0');
-      img.src = `newanimation/ezgif-frame-${frameNum}.jpg`;
+      img.src = `bestframes/ezgif-frame-${frameNum}.jpg`;
 
       img.onload = () => {
         // As soon as the first frame loads, render it initially

@@ -164,8 +164,8 @@
 /* Responsive */
 @media (max-width: 768px) {
   .hero {
-    height: 50vh;
-    min-height: 50vh;
+    height: 37.5vh;
+    min-height: 37.5vh;
     display: flex;
     flex-direction: column;
     align-items: center;

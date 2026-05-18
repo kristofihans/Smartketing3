@@ -42,8 +42,16 @@ const Gallery = () => {
     'web2.png',
   ];
 
+  const bgStyle = {
+    backgroundImage: `radial-gradient(circle at center, rgba(10, 10, 12, 0.45) 0%, rgba(10, 10, 12, 0.95) 100%), url(${import.meta.env.BASE_URL}portfolio_bg.jpg)`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center center',
+    backgroundAttachment: 'fixed',
+    backgroundRepeat: 'no-repeat'
+  };
+
   return (
-    <div className="gallery-page">
+    <div className="gallery-page" style={bgStyle}>
       <div className="gallery__header">
         <h1 className="gallery__title">Portofoliu</h1>
       </div>

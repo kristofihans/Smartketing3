@@ -2,7 +2,7 @@
 .gallery-page {
   padding-top: 100px; /* offset for fixed navbar */
   min-height: 100vh;
-  background-color: var(--color-bg-primary);
+  background-color: #0a0a0c;
   color: var(--color-text-primary);
 }
 
@@ -92,4 +92,20 @@
 
 .gallery__item--web {
   width: 100%;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .gallery__content {
+    padding: 0 3%;
+  }
+
+  .gallery__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .gallery__grid--web {
+    grid-template-columns: 1fr; /* Keep web portfolio as full-width screenshots */
+  }
 }
