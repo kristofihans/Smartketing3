@@ -28,7 +28,7 @@ const VideoPortfolio = () => {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 1, delay: 0.4 }}
         >
-          <VideoCard src="video.mp4" />
+          <VideoCard src={`${import.meta.env.BASE_URL}video.mp4`} />
         </motion.div>
 
         <div className="show-more-container">

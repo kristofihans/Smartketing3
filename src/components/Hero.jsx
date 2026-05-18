@@ -25,7 +25,7 @@ const Hero = ({ onVideoLoad }) => {
     }
   }, [onVideoLoad]);
 
-  const videoSrc = 'herobackgroundvideo.mp4';
+  const videoSrc = `${import.meta.env.BASE_URL}herobackgroundvideo.mp4`;
 
   return (
     <section className="hero" id="hero">
@@ -49,7 +49,7 @@ const Hero = ({ onVideoLoad }) => {
 
       {/* Center Logo */}
       <div className="hero__logo-container">
-        <img src="logo.png" alt="Smartketing" className="hero__logo" />
+        <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Smartketing" className="hero__logo" />
       </div>
 
       {/* Scroll Suggestion */}

@@ -78,7 +78,7 @@ const Gallery = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
               >
-                <VideoCard src={src} />
+                <VideoCard src={`${import.meta.env.BASE_URL}${src}`} />
               </motion.div>
             ))}
 
@@ -90,7 +90,7 @@ const Gallery = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
               >
-                <img src={src} alt={`Gallery Foto ${i + 1}`} loading="lazy" />
+                <img src={`${import.meta.env.BASE_URL}${src}`} alt={`Gallery Foto ${i + 1}`} loading="lazy" />
               </motion.div>
             ))}
 
@@ -102,7 +102,7 @@ const Gallery = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
               >
-                <img src={src} alt={`Web Case ${i + 1}`} loading="lazy" />
+                <img src={`${import.meta.env.BASE_URL}${src}`} alt={`Web Case ${i + 1}`} loading="lazy" />
               </motion.div>
             ))}
           </motion.div>

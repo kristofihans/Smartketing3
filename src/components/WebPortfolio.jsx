@@ -25,7 +25,7 @@ const WebPortfolio = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
         >
-          <img src="web1.png" alt="Web Design Mockup" />
+          <img src={`${import.meta.env.BASE_URL}web1.png`} alt="Web Design Mockup" />
         </motion.div>
 
         <div className="show-more-container">

@@ -25,7 +25,7 @@ const PhotoPortfolio = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
         >
-          <img src="productimage1.jpg" alt="Photography Hero" />
+          <img src={`${import.meta.env.BASE_URL}productimage1.jpg`} alt="Photography Hero" />
         </motion.div>
 
         <div className="show-more-container">
