@@ -60,11 +60,11 @@
 }
 
 .hero__logo {
-  max-width: 850px;
+  max-width: 1050px;
   width: 95vw;
   height: auto;
   opacity: 1;
-  filter: drop-shadow(0 0 25px rgba(220, 38, 38, 0.6)) drop-shadow(0 0 60px rgba(220, 38, 38, 0.4));
+  filter: drop-shadow(0 0 35px rgba(220, 38, 38, 0.8)) drop-shadow(0 0 75px rgba(220, 38, 38, 0.5)) drop-shadow(0 0 130px rgba(220, 38, 38, 0.3));
 }
 
 /* Scroll Suggestion */
@@ -193,7 +193,7 @@
   }
 
   .hero__logo {
-    max-width: 80vw;
+    max-width: 90vw;
   }
 
   .hero__scroll-suggestion {
