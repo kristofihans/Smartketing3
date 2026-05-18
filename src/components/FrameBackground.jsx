@@ -77,7 +77,7 @@ const FrameBackground = () => {
     
     const trigger = ScrollTrigger.create({
       trigger: scrollTarget,
-      start: 'top bottom', // Start scrubbing when app__content enters from bottom
+      start: 'top top', // Start scrubbing when app__content reaches the top of the viewport
       end: 'bottom bottom',   // End when the bottom of app__content reaches bottom of viewport
       scrub: 0.5,
       onUpdate: (self) => {

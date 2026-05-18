@@ -8,6 +8,14 @@
 .app__content {
   position: relative;
   z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.portfolio-wrapper {
+  grid-area: 1 / 1;
+  position: relative;
+  z-index: 1;
 }
 
 /* Noise / Grain Texture Overlay — tactile feel */

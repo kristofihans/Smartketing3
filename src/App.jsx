@@ -13,16 +13,19 @@ import FrameBackground from './components/FrameBackground';
 function App() {
   return (
     <div className="app">
-      <FrameBackground />
+
       <Navbar />
       <Hero />
       <div className="app__content">
-        <VideoPortfolio />
-        <PhotoPortfolio />
-        <WebPortfolio />
-        <Services />
-        <Outro />
-        <Footer />
+        <FrameBackground />
+        <div className="portfolio-wrapper">
+          <VideoPortfolio />
+          <PhotoPortfolio />
+          <WebPortfolio />
+          <Services />
+          <Outro />
+          <Footer />
+        </div>
       </div>
       <WhatsAppButton />
     </div>
