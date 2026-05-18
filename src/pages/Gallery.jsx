@@ -11,6 +11,7 @@ const Gallery = () => {
 
   // Sync tab with URL
   useEffect(() => {
+    window.scrollTo(0, 0);
     const tabParam = searchParams.get('tab');
     if (tabParam && ['foto', 'video', 'web'].includes(tabParam)) {
       setActiveTab(tabParam);
