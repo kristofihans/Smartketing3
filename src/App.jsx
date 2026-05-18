@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import './App.css';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -11,11 +12,12 @@ import WhatsAppButton from './components/WhatsAppButton';
 import FrameBackground from './components/FrameBackground';
 
 function App() {
-  return (
-    <div className="app">
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
 
+  return (
+    <div className="app" style={{ opacity: isVideoLoaded ? 1 : 0 }}>
       <Navbar />
-      <Hero />
+      <Hero onVideoLoad={() => setIsVideoLoaded(true)} isVideoLoaded={isVideoLoaded} />
       <div className="app__content">
         <FrameBackground />
         <div className="portfolio-wrapper">

@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import './Hero.css';
 
-const Hero = () => {
+const Hero = ({ onVideoLoad }) => {
   const [isMobile, setIsMobile] = useState(false);
   const videoRef = useRef(null);
 
@@ -19,8 +19,11 @@ const Hero = () => {
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.playbackRate = 0.85;
+      if (videoRef.current.readyState >= 3) {
+        onVideoLoad();
+      }
     }
-  }, []);
+  }, [onVideoLoad]);
 
   const videoSrc = 'herobackgroundvideo.mp4';
 
@@ -32,12 +35,12 @@ const Hero = () => {
           ref={videoRef}
           className="hero__video"
           src={videoSrc}
-          poster="heroposter.jpg"
           autoPlay
           muted
           loop
           playsInline
           preload="auto"
+          onLoadedData={onVideoLoad}
         />
       </div>
 
@@ -50,12 +53,7 @@ const Hero = () => {
       </div>
 
       {/* Scroll Suggestion */}
-      <motion.div
-        className="hero__scroll-suggestion"
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-      >
+      <div className="hero__scroll-suggestion">
         <a href="#contact" className="hero__contact-link">
           <div className="hero__scroll-icon">
             <span className="hero__chevron" style={{ '--chevron-base-opacity': 0.3 }} />
@@ -63,7 +61,7 @@ const Hero = () => {
             <span className="hero__chevron" style={{ '--chevron-base-opacity': 1 }} />
           </div>
         </a>
-      </motion.div>
+      </div>
 
     </section>
   );
