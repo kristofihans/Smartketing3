@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link, useLocation } from 'react-router-dom';
 import './Navbar.css';
 
 const navLinks = [
-  { label: 'Servicii', href: '#services' },
-  { label: 'Video', href: '#video' },
-  { label: 'Foto', href: '#photo' },
-  { label: 'Web', href: '#web' },
-  { label: 'Contact', href: '#contact' },
+  { label: 'Servicii', href: '/#services' },
+  { label: 'Portofoliu', href: '/gallery' },
+  { label: 'Contact', href: '/#contact' },
 ];
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
+  const isGallery = location.pathname.includes('/gallery');
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -28,20 +29,24 @@ const Navbar = () => {
 
   return (
     <motion.nav
-      className={`navbar ${scrolled ? 'navbar--scrolled' : ''}`}
+      className={`navbar ${scrolled ? 'navbar--scrolled' : ''} ${isGallery ? 'navbar--gallery' : ''}`}
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.3, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
     >
-      <a href="#hero" className="navbar__logo">
+      <Link to="/" className="navbar__logo">
         <img src="logo.png" alt="Smartketing" className="navbar__logo-img" />
-      </a>
+      </Link>
 
       {/* Desktop Links */}
       <ul className="navbar__links">
         {navLinks.map((link) => (
           <li key={link.label}>
-            <a className="navbar__link" href={link.href}>{link.label}</a>
+            {link.href.startsWith('/#') ? (
+              <a className="navbar__link" href={link.href}>{link.label}</a>
+            ) : (
+              <Link className="navbar__link" to={link.href}>{link.label}</Link>
+            )}
           </li>
         ))}
       </ul>
@@ -81,13 +86,23 @@ const Navbar = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 + i * 0.08, duration: 0.5 }}
               >
-                <a
-                  className="navbar__mobile-link"
-                  href={link.href}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  {link.label}
-                </a>
+                {link.href.startsWith('/#') ? (
+                  <a
+                    className="navbar__mobile-link"
+                    href={link.href}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {link.label}
+                  </a>
+                ) : (
+                  <Link
+                    className="navbar__mobile-link"
+                    to={link.href}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                )}
               </motion.li>
             ))}
             <motion.li

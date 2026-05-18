@@ -143,12 +143,25 @@
     justify-content: flex-end;
   }
 
+  .navbar--gallery {
+    justify-content: space-between;
+  }
+
   .navbar--scrolled {
     padding: 0.5rem 1.2rem;
   }
 
   .navbar__logo {
     display: none;
+  }
+
+  .navbar--gallery .navbar__logo {
+    display: flex;
+    z-index: 110;
+  }
+
+  .navbar--gallery .navbar__logo-img {
+    height: 65px;
   }
 
   .navbar__links {

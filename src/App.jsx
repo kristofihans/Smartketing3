@@ -1,36 +1,22 @@
-import { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import Services from './components/Services';
-import VideoPortfolio from './components/VideoPortfolio';
-import PhotoPortfolio from './components/PhotoPortfolio';
-import WebPortfolio from './components/WebPortfolio';
-import Outro from './components/Outro';
-import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
-import FrameBackground from './components/FrameBackground';
+import Home from './pages/Home';
+import Gallery from './pages/Gallery';
 
 function App() {
-  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
-
   return (
-    <div className="app" style={{ opacity: isVideoLoaded ? 1 : 0 }}>
-      <Navbar />
-      <Hero onVideoLoad={() => setIsVideoLoaded(true)} isVideoLoaded={isVideoLoaded} />
-      <div className="app__content">
-        <FrameBackground />
-        <div className="portfolio-wrapper">
-          <VideoPortfolio />
-          <PhotoPortfolio />
-          <WebPortfolio />
-          <Services />
-          <Outro />
-          <Footer />
-        </div>
+    <Router>
+      <div className="app">
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/gallery" element={<Gallery />} />
+        </Routes>
+        <WhatsAppButton />
       </div>
-      <WhatsAppButton />
-    </div>
+    </Router>
   );
 }
 
