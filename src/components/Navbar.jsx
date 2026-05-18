@@ -42,11 +42,7 @@ const Navbar = () => {
       <ul className="navbar__links">
         {navLinks.map((link) => (
           <li key={link.label}>
-            {link.href.startsWith('/#') ? (
-              <a className="navbar__link" href={link.href}>{link.label}</a>
-            ) : (
-              <Link className="navbar__link" to={link.href}>{link.label}</Link>
-            )}
+            <Link className="navbar__link" to={link.href}>{link.label}</Link>
           </li>
         ))}
       </ul>
@@ -86,23 +82,13 @@ const Navbar = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 + i * 0.08, duration: 0.5 }}
               >
-                {link.href.startsWith('/#') ? (
-                  <a
-                    className="navbar__mobile-link"
-                    href={link.href}
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    {link.label}
-                  </a>
-                ) : (
-                  <Link
-                    className="navbar__mobile-link"
-                    to={link.href}
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    {link.label}
-                  </Link>
-                )}
+                <Link
+                  className="navbar__mobile-link"
+                  to={link.href}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
               </motion.li>
             ))}
             <motion.li

@@ -7,7 +7,7 @@ import Gallery from './pages/Gallery';
 
 function App() {
   return (
-    <Router>
+    <Router basename="/Smartketing2">
       <div className="app">
         <Navbar />
         <Routes>
