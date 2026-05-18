@@ -54,7 +54,7 @@ const Hero = ({ onVideoLoad }) => {
 
       {/* Scroll Suggestion */}
       <div className="hero__scroll-suggestion">
-        <a href="#contact" className="hero__contact-link">
+        <a href="#video" className="hero__contact-link">
           <div className="hero__scroll-icon">
             <span className="hero__chevron" style={{ '--chevron-base-opacity': 0.3 }} />
             <span className="hero__chevron" style={{ '--chevron-base-opacity': 0.6 }} />

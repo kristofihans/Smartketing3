@@ -71,6 +71,16 @@ const Services = () => {
             </motion.div>
           ))}
         </div>
+
+        <div className="scroll-next-wrapper">
+          <a href="#contact" className="scroll-next-link">
+            <div className="scroll-chevron-icon">
+              <span className="scroll-chevron" />
+              <span className="scroll-chevron" />
+              <span className="scroll-chevron" />
+            </div>
+          </a>
+        </div>
       </div>
     </section>
   );

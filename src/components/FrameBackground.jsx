@@ -5,7 +5,7 @@ import './FrameBackground.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const TOTAL_FRAMES = 294; // frames from animationframes folder
+const TOTAL_FRAMES = 241; // frames from newanimation folder
 const START_FRAME = 1;
 
 const FrameBackground = () => {
@@ -60,7 +60,7 @@ const FrameBackground = () => {
     for (let i = 0; i < TOTAL_FRAMES; i++) {
       const img = new Image();
       const frameNum = String(START_FRAME + i).padStart(3, '0');
-      img.src = `animationframes/ezgif-frame-${frameNum}.jpg`;
+      img.src = `newanimation/ezgif-frame-${frameNum}.jpg`;
 
       img.onload = () => {
         // As soon as the first frame loads, render it initially

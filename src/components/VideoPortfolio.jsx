@@ -201,6 +201,16 @@ const VideoPortfolio = () => {
             </svg>
           </button>
         </div>
+
+        <div className="scroll-next-wrapper">
+          <a href="#photo" className="scroll-next-link">
+            <div className="scroll-chevron-icon">
+              <span className="scroll-chevron" />
+              <span className="scroll-chevron" />
+              <span className="scroll-chevron" />
+            </div>
+          </a>
+        </div>
       </div>
     </section>
   );
