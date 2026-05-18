@@ -32,6 +32,7 @@ const Hero = () => {
           ref={videoRef}
           className="hero__video"
           src={videoSrc}
+          poster="heroposter.jpg"
           autoPlay
           muted
           loop
