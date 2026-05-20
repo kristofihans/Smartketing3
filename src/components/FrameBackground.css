@@ -15,4 +15,9 @@
   object-fit: cover;
   opacity: 1;
   background-color: #050505;
+
+  /* GPU acceleration for smoother rendering */
+  will-change: contents;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }

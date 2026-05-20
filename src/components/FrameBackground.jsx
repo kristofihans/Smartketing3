@@ -5,8 +5,10 @@ import './FrameBackground.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const TOTAL_FRAMES = 240; // frames from ultimate folder
-const START_FRAME = 1;
+const TOTAL_FRAMES = 221; // frames from ultimate folder
+const START_FRAME = 20;
+const PRIORITY_BATCH = 30; // first N frames to load with high priority
+const BATCH_SIZE = 10; // load remaining frames in batches of this size
 
 const FrameBackground = () => {
   const canvasRef = useRef(null);
@@ -15,34 +17,43 @@ const FrameBackground = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) return;
 
+    // Enable high-quality image smoothing for smoother frame transitions
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
     // Array to hold the preloaded Image objects
-    const images = [];
+    const images = new Array(TOTAL_FRAMES);
 
     // Store the current frame index
     const animState = { frame: 0 };
     let renderRequested = false;
+    let canvasReady = false;
+
+    // Helper to build frame URL
+    const getFrameUrl = (index) => {
+      const frameNum = String(START_FRAME + index).padStart(3, '0');
+      return `${import.meta.env.BASE_URL}ultimate/ezgif-frame-${frameNum}.jpg`;
+    };
 
     // Function to render the current frame
     const renderFrame = () => {
       renderRequested = false;
       const img = images[animState.frame];
       if (img && img.complete && img.naturalWidth !== 0) {
-        // Match canvas internal resolution to the image
-        if (canvas.width !== img.width || canvas.height !== img.height) {
+        // Set canvas dimensions once to match the image
+        if (!canvasReady) {
           canvas.width = img.width;
           canvas.height = img.height;
+          canvasReady = true;
         }
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0);
 
-        // Frame index 218 corresponds to ezgif-frame-219.jpg
-        // Apply a smooth dark overlay from this frame onwards to transition to black
-        if (animState.frame >= 218) {
-          // Fade to 70% opacity over 20 frames for a smooth transition, avoiding an abrupt flicker
-          const fadeProgress = Math.min(1, (animState.frame - 218) / 20);
+        // Apply a smooth dark overlay near the end to transition to black
+        if (animState.frame >= 201) {
+          const fadeProgress = Math.min(1, (animState.frame - 201) / 20);
           ctx.fillStyle = `rgba(0, 0, 0, ${fadeProgress * 0.7})`;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
@@ -56,36 +67,64 @@ const FrameBackground = () => {
       }
     };
 
-    // Preload all frames from animationframes folder
-    for (let i = 0; i < TOTAL_FRAMES; i++) {
-      const img = new Image();
-      const frameNum = String(START_FRAME + i).padStart(3, '0');
-      img.src = `${import.meta.env.BASE_URL}ultimate/ezgif-frame-${frameNum}.jpg`;
+    // --- Prioritized frame loading ---
 
-      img.onload = () => {
-        // As soon as the first frame loads, render it initially
-        if (i === 0 && animState.frame === 0) {
-          requestRender();
+    // Load a single frame and return a promise
+    const loadFrame = (index) => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.decoding = 'async';
+        img.src = getFrameUrl(index);
+        img.onload = () => resolve();
+        img.onerror = () => resolve(); // don't block on errors
+        images[index] = img;
+      });
+    };
+
+    // Load frames in sequential batches to avoid overwhelming the browser
+    const loadFramesBatched = async (startIdx, endIdx, batchSize) => {
+      for (let i = startIdx; i < endIdx; i += batchSize) {
+        const batch = [];
+        for (let j = i; j < Math.min(i + batchSize, endIdx); j++) {
+          if (!images[j]) {
+            batch.push(loadFrame(j));
+          }
         }
-      };
+        await Promise.all(batch);
+      }
+    };
 
-      images.push(img);
-    }
+    // Start loading: priority frames first, then the rest in background
+    const startLoading = async () => {
+      // Phase 1: Load the first batch with high priority (needed for initial scroll)
+      const priorityEnd = Math.min(PRIORITY_BATCH, TOTAL_FRAMES);
+      await loadFramesBatched(0, priorityEnd, priorityEnd);
+
+      // Render the first frame as soon as priority batch is done
+      if (animState.frame === 0) {
+        requestRender();
+      }
+
+      // Phase 2: Load the remaining frames in small batches in the background
+      await loadFramesBatched(priorityEnd, TOTAL_FRAMES, BATCH_SIZE);
+    };
+
+    startLoading();
 
     // Set up a single GSAP ScrollTrigger across the entire app__content
     const scrollTarget = document.querySelector('.app__content');
-    
+
     const trigger = ScrollTrigger.create({
       trigger: scrollTarget,
-      start: 'top top', // Start scrubbing when app__content reaches the top of the viewport
-      end: 'bottom bottom',   // End when the bottom of app__content reaches bottom of viewport
-      scrub: 0.5,
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: 0.3, // tighter scrub for snappier response
       onUpdate: (self) => {
         const nextFrame = Math.min(
           TOTAL_FRAMES - 1,
           Math.floor(self.progress * TOTAL_FRAMES)
         );
-        
+
         if (animState.frame !== nextFrame) {
           animState.frame = nextFrame;
           requestRender();
@@ -93,11 +132,13 @@ const FrameBackground = () => {
       },
     });
 
-    // Handle ResizeObserver for dynamic heights
+    // Handle ResizeObserver for dynamic heights (debounced)
     let resizeObserver;
+    let resizeTimeout;
     if (scrollTarget && window.ResizeObserver) {
       resizeObserver = new ResizeObserver(() => {
-        ScrollTrigger.refresh();
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => ScrollTrigger.refresh(), 200);
       });
       resizeObserver.observe(scrollTarget);
     }
@@ -105,6 +146,7 @@ const FrameBackground = () => {
     // Cleanup
     return () => {
       trigger.kill();
+      clearTimeout(resizeTimeout);
       if (resizeObserver && scrollTarget) {
         resizeObserver.unobserve(scrollTarget);
       }
