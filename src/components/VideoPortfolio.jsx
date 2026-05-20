@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import VideoCard from './VideoCard';
+import Lightbox from './Lightbox';
 import './Portfolio.css';
 
 const VideoPortfolio = () => {
   const navigate = useNavigate();
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   return (
     <section className="portfolio-section portfolio-section--first" id="video">
@@ -23,12 +25,17 @@ const VideoPortfolio = () => {
         {/* Flagship Video */}
         <motion.div 
           className="feature-media feature-media--portrait"
+          style={{ cursor: 'pointer' }}
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 1, delay: 0.4 }}
         >
-          <VideoCard src={`${import.meta.env.BASE_URL}video.mp4`} autoPlay={true} />
+          <VideoCard 
+            src={`${import.meta.env.BASE_URL}video.mp4`} 
+            autoPlay={true} 
+            onClick={() => setLightboxOpen(true)}
+          />
         </motion.div>
 
         <div className="show-more-container">
@@ -42,6 +49,14 @@ const VideoPortfolio = () => {
             </svg>
           </button>
         </div>
+
+        <Lightbox
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+          mediaItems={[{ type: 'video', src: `${import.meta.env.BASE_URL}video.mp4` }]}
+          currentIndex={0}
+          setCurrentIndex={() => {}}
+        />
 
         <div className="scroll-next-wrapper">
           <a href="#photo" className="scroll-next-link">

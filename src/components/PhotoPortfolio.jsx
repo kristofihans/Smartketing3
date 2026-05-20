@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import Lightbox from './Lightbox';
 import './Portfolio.css';
 
 const PhotoPortfolio = () => {
   const navigate = useNavigate();
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   return (
     <section className="portfolio-section portfolio-section--elevated" id="photo">
@@ -20,10 +23,12 @@ const PhotoPortfolio = () => {
         {/* Hero Photograph */}
         <motion.div 
           className="feature-media feature-media--portrait"
+          style={{ cursor: 'pointer' }}
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
+          onClick={() => setLightboxOpen(true)}
         >
           <img src={`${import.meta.env.BASE_URL}productimage1.jpg`} alt="Photography Hero" />
         </motion.div>
@@ -39,6 +44,14 @@ const PhotoPortfolio = () => {
             </svg>
           </button>
         </div>
+
+        <Lightbox
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+          mediaItems={[{ type: 'image', src: `${import.meta.env.BASE_URL}productimage1.jpg` }]}
+          currentIndex={0}
+          setCurrentIndex={() => {}}
+        />
 
         <div className="scroll-next-wrapper">
           <a href="#web" className="scroll-next-link">

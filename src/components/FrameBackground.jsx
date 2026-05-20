@@ -60,7 +60,7 @@ const FrameBackground = () => {
     for (let i = 0; i < TOTAL_FRAMES; i++) {
       const img = new Image();
       const frameNum = String(START_FRAME + i).padStart(3, '0');
-      img.src = `ultimate/ezgif-frame-${frameNum}.jpg`;
+      img.src = `${import.meta.env.BASE_URL}ultimate/ezgif-frame-${frameNum}.jpg`;
 
       img.onload = () => {
         // As soon as the first frame loads, render it initially

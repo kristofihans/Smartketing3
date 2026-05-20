@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import './Portfolio.css';
 
-const VideoCard = ({ src, autoPlay = false }) => {
+const VideoCard = ({ src, autoPlay = false, onClick }) => {
   const videoRef = useRef(null);
   const progressRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(autoPlay);
@@ -81,7 +81,13 @@ const VideoCard = ({ src, autoPlay = false }) => {
   return (
     <div
       className="video-card"
-      onClick={togglePlay}
+      onClick={(e) => {
+        if (onClick) {
+          onClick(e);
+        } else {
+          togglePlay(e);
+        }
+      }}
       onMouseEnter={flashControls}
       onMouseMove={flashControls}
       onTouchStart={flashControls}
