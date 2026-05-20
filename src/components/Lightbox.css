@@ -203,12 +203,10 @@
   }
 }
 
-/* Hide navbar and WhatsApp float on mobile when lightbox is open */
-@media (max-width: 768px) {
-  body.lightbox-open .navbar {
-    display: none !important;
-  }
-  body.lightbox-open .whatsapp-float {
-    display: none !important;
-  }
+/* Hide navbar and WhatsApp float when lightbox is open */
+body.lightbox-open .navbar {
+  display: none !important;
+}
+body.lightbox-open .whatsapp-float {
+  display: none !important;
 }

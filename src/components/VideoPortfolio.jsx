@@ -1,13 +1,10 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import VideoCard from './VideoCard';
-import Lightbox from './Lightbox';
 import './Portfolio.css';
 
 const VideoPortfolio = () => {
   const navigate = useNavigate();
-  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   return (
     <section className="portfolio-section portfolio-section--first" id="video">
@@ -34,7 +31,6 @@ const VideoPortfolio = () => {
           <VideoCard 
             src={`${import.meta.env.BASE_URL}video.mp4`} 
             autoPlay={true} 
-            onClick={() => setLightboxOpen(true)}
           />
         </motion.div>
 
@@ -49,14 +45,6 @@ const VideoPortfolio = () => {
             </svg>
           </button>
         </div>
-
-        <Lightbox
-          isOpen={lightboxOpen}
-          onClose={() => setLightboxOpen(false)}
-          mediaItems={[{ type: 'video', src: `${import.meta.env.BASE_URL}video.mp4` }]}
-          currentIndex={0}
-          setCurrentIndex={() => {}}
-        />
 
         <div className="scroll-next-wrapper">
           <a href="#photo" className="scroll-next-link">
