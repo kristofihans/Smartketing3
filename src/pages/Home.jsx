@@ -11,7 +11,6 @@ import Footer from '../components/Footer';
 import FrameBackground from '../components/FrameBackground';
 
 const Home = () => {
-  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -30,8 +29,8 @@ const Home = () => {
   }, [location]);
 
   return (
-    <div style={{ opacity: isVideoLoaded ? 1 : 0, transition: 'opacity 0.5s ease-in-out' }}>
-      <Hero onVideoLoad={() => setIsVideoLoaded(true)} isVideoLoaded={isVideoLoaded} />
+    <div>
+      <Hero />
       <div className="app__content">
         <FrameBackground />
         <div className="portfolio-wrapper">

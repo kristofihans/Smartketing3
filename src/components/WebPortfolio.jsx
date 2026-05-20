@@ -27,7 +27,7 @@ const WebPortfolio = () => {
           transition={{ duration: 0.8 }}
           onClick={() => navigate('/gallery?tab=web')}
         >
-          <img src={`${import.meta.env.BASE_URL}web1.webp`} alt="Web Design Mockup" />
+          <img src={`${import.meta.env.BASE_URL}web1.webp`} alt="Web Design Mockup" loading="lazy" />
         </motion.div>
 
         <div className="show-more-container">

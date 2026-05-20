@@ -4,6 +4,7 @@ import './Hero.css';
 
 const Hero = ({ onVideoLoad }) => {
   const [isMobile, setIsMobile] = useState(false);
+  const [isVideoActive, setIsVideoActive] = useState(false);
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -15,15 +16,21 @@ const Hero = ({ onVideoLoad }) => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  const handleVideoActive = () => {
+    setIsVideoActive(true);
+    if (onVideoLoad) onVideoLoad();
+  };
+
   // Slow down the hero video for a cinematic feel
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.playbackRate = 0.85;
-      if (videoRef.current.readyState >= 3) {
-        onVideoLoad();
+      if (videoRef.current.readyState >= 3 && !isVideoActive) {
+        setIsVideoActive(true);
+        if (onVideoLoad) onVideoLoad();
       }
     }
-  }, [onVideoLoad]);
+  }, [onVideoLoad, isVideoActive]);
 
   const videoSrc = `${import.meta.env.BASE_URL}herobackgroundvideo.mp4`;
 
@@ -31,16 +38,24 @@ const Hero = ({ onVideoLoad }) => {
     <section className="hero" id="hero">
       {/* Video Background */}
       <div className="hero__video-wrapper">
+        <img 
+          src={`${import.meta.env.BASE_URL}heroposter.webp`} 
+          alt="Hero background" 
+          className={`hero__poster ${isVideoActive ? 'hero__poster--hidden' : ''}`}
+        />
         <video
           ref={videoRef}
-          className="hero__video"
+          className={`hero__video ${isVideoActive ? 'hero__video--active' : ''}`}
           src={videoSrc}
           autoPlay
           muted
           loop
           playsInline
           preload="auto"
-          onLoadedData={onVideoLoad}
+          poster={`${import.meta.env.BASE_URL}heroposter.webp`}
+          onPlay={handleVideoActive}
+          onPlaying={handleVideoActive}
+          onLoadedData={handleVideoActive}
         />
       </div>
 

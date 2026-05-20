@@ -75,7 +75,7 @@ const Gallery = () => {
           muted
           loop
           playsInline
-          preload="auto"
+          preload="metadata"
         />
         <div className="gallery-bg-overlay" />
       </div>
