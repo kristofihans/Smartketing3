@@ -48,9 +48,9 @@ const Navbar = () => {
       </ul>
 
       {/* Desktop CTA */}
-      <a href="#contact" className="navbar__cta navbar__cta-desktop">
+      <Link to="/#contact" className="navbar__cta navbar__cta-desktop">
         Hai să vorbim
-      </a>
+      </Link>
 
       {/* Mobile Hamburger */}
       <div
@@ -96,13 +96,13 @@ const Navbar = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.5 }}
             >
-              <a
+              <Link
                 className="navbar__mobile-cta"
-                href="#contact"
+                to="/#contact"
                 onClick={() => setMenuOpen(false)}
               >
                 Hai să vorbim
-              </a>
+              </Link>
             </motion.li>
           </motion.ul>
         )}

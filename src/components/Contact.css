@@ -14,6 +14,7 @@
   max-width: 800px;
   margin: 0 auto;
   text-align: center;
+  scroll-margin-top: 160px; /* Offset for fixed header + outro separator spacing */
 }
 
 .contact__label {
@@ -132,6 +133,10 @@
 @media (max-width: 768px) {
   .contact {
     padding: var(--space-2xl) var(--space-md);
+  }
+
+  .contact__container {
+    scroll-margin-top: 110px; /* Smaller header offset on mobile */
   }
 
   .contact__row {

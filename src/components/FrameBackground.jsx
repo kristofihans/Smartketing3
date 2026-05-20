@@ -111,25 +111,27 @@ const FrameBackground = () => {
 
     startLoading();
 
-    // Set up a single GSAP ScrollTrigger across the entire app__content
+    // Set up a GSAP ScrollTrigger timeline to scrub the frames with easing
     const scrollTarget = document.querySelector('.app__content');
 
-    const trigger = ScrollTrigger.create({
-      trigger: scrollTarget,
-      start: 'top top',
-      end: 'bottom bottom',
-      scrub: 0.3, // tighter scrub for snappier response
-      onUpdate: (self) => {
-        const nextFrame = Math.min(
-          TOTAL_FRAMES - 1,
-          Math.floor(self.progress * TOTAL_FRAMES)
-        );
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: scrollTarget,
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 1.0, // Catch up over 1 second for a smooth glide
+      }
+    });
 
-        if (animState.frame !== nextFrame) {
-          animState.frame = nextFrame;
-          requestRender();
-        }
-      },
+    tl.to(animState, {
+      frame: TOTAL_FRAMES - 1,
+      ease: 'power2.out', // Fast response initially, then autoplays and decelerates smoothly
+      duration: 1,
+      onUpdate: () => {
+        // Guarantee index is an integer
+        animState.frame = Math.floor(animState.frame);
+        requestRender();
+      }
     });
 
     // Handle ResizeObserver for dynamic heights (debounced)
@@ -145,7 +147,7 @@ const FrameBackground = () => {
 
     // Cleanup
     return () => {
-      trigger.kill();
+      tl.kill();
       clearTimeout(resizeTimeout);
       if (resizeObserver && scrollTarget) {
         resizeObserver.unobserve(scrollTarget);

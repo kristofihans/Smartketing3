@@ -7,7 +7,7 @@ const Lightbox = ({ isOpen, onClose, mediaItems = [], currentIndex = 0, setCurre
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
-  // Handle keyboard navigation
+  // Handle keyboard navigation and body class/styles
   useEffect(() => {
     if (!isOpen) return;
 
@@ -18,12 +18,14 @@ const Lightbox = ({ isOpen, onClose, mediaItems = [], currentIndex = 0, setCurre
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    // Disable body scroll when lightbox is open
+    // Disable body scroll and add class when lightbox is open
     document.body.style.overflow = 'hidden';
+    document.body.classList.add('lightbox-open');
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
+      document.body.classList.remove('lightbox-open');
     };
   }, [isOpen, currentIndex, mediaItems]);
 
