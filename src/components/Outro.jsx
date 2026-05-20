@@ -21,7 +21,7 @@ const Outro = () => {
               key={i}
               className="client-logo"
               initial={{ opacity: 0, y: 30, filter: 'blur(6px)' }}
-              whileInView={{ opacity: 0.5, y: 0, filter: 'blur(0px)' }}
+              whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
               viewport={{ once: true }}
               transition={{ 
                 duration: 1.2, 
