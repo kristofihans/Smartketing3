@@ -49,7 +49,7 @@ const Hero = ({ onVideoLoad }) => {
 
       {/* Center Logo */}
       <div className="hero__logo-container">
-        <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Smartketing" className="hero__logo" />
+        <img src={`${import.meta.env.BASE_URL}logo.webp`} alt="Smartketing" className="hero__logo" />
       </div>
 
       {/* Scroll Suggestion */}

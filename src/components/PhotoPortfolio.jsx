@@ -27,7 +27,7 @@ const PhotoPortfolio = () => {
           transition={{ duration: 0.8 }}
           onClick={() => navigate('/gallery?tab=foto')}
         >
-          <img src={`${import.meta.env.BASE_URL}productimage1.jpg`} alt="Photography Hero" />
+          <img src={`${import.meta.env.BASE_URL}productimage1.webp`} alt="Photography Hero" />
         </motion.div>
 
         <div className="show-more-container">

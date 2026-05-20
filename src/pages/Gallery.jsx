@@ -38,14 +38,14 @@ const Gallery = () => {
   ];
 
   const galleryImages = [
-    'productimage1.jpg',
-    'productimage2.jpg',
-    'productimage3.jpg',
+    'productimage1.webp',
+    'productimage2.webp',
+    'productimage3.webp',
   ];
 
   const webCases = [
-    'web1.png',
-    'web2.png',
+    'web1.webp',
+    'web2.webp',
   ];
 
   // Map elements to Lightbox media format
