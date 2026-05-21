@@ -3,7 +3,7 @@ const path = require('path');
 const sharp = require('sharp');
 
 const PUBLIC_DIR = path.join(__dirname, 'public');
-const FRAMES_DIR = path.join(PUBLIC_DIR, 'framesfinal');
+const FRAMES_DIR = path.join(PUBLIC_DIR, 'ultimateframes');
 
 async function optimizeImage(filePath, options = {}) {
   const ext = path.extname(filePath);

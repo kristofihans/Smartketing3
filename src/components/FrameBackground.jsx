@@ -35,7 +35,7 @@ const FrameBackground = () => {
     // Helper to build frame URL
     const getFrameUrl = (index) => {
       const frameNum = String(START_FRAME + index).padStart(3, '0');
-      return `${import.meta.env.BASE_URL}framesfinal/ezgif-frame-${frameNum}.webp`;
+      return `${import.meta.env.BASE_URL}ultimateframes/ezgif-frame-${frameNum}.webp`;
     };
 
     // Function to render the current frame
