@@ -5,7 +5,7 @@ import './FrameBackground.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const TOTAL_FRAMES = 240; // frames from ultimate folder
+const TOTAL_FRAMES = 241; // frames from BestUltimateFrames folder
 const START_FRAME = 1;
 const PRIORITY_BATCH = 30; // first N frames to load with high priority
 const BATCH_SIZE = 10; // load remaining frames in batches of this size
@@ -35,7 +35,7 @@ const FrameBackground = () => {
     // Helper to build frame URL
     const getFrameUrl = (index) => {
       const frameNum = String(START_FRAME + index).padStart(3, '0');
-      return `${import.meta.env.BASE_URL}ultimateframes/ezgif-frame-${frameNum}.webp`;
+      return `${import.meta.env.BASE_URL}BestUltimateFrames/ezgif-frame-${frameNum}.webp`;
     };
 
     // Function to render the current frame
