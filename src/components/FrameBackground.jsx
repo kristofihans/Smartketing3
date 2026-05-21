@@ -5,8 +5,8 @@ import './FrameBackground.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const TOTAL_FRAMES = 221; // frames from ultimate folder
-const START_FRAME = 20;
+const TOTAL_FRAMES = 240; // frames from ultimate folder
+const START_FRAME = 1;
 const PRIORITY_BATCH = 30; // first N frames to load with high priority
 const BATCH_SIZE = 10; // load remaining frames in batches of this size
 
@@ -52,8 +52,9 @@ const FrameBackground = () => {
         ctx.drawImage(img, 0, 0);
 
         // Apply a smooth dark overlay near the end to transition to black
-        if (animState.frame >= 201) {
-          const fadeProgress = Math.min(1, (animState.frame - 201) / 20);
+        const fadeStartFrame = TOTAL_FRAMES - 20;
+        if (animState.frame >= fadeStartFrame) {
+          const fadeProgress = Math.min(1, (animState.frame - fadeStartFrame) / 20);
           ctx.fillStyle = `rgba(0, 0, 0, ${fadeProgress * 0.7})`;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
@@ -116,7 +117,7 @@ const FrameBackground = () => {
 
     const tl = gsap.timeline({
       scrollTrigger: {
-        trigger: scrollTarget,
+        trigger: document.documentElement,
         start: 'top top',
         end: 'bottom bottom',
         scrub: 1.0, // Catch up over 1 second for a smooth glide
