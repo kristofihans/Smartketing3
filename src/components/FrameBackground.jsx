@@ -62,7 +62,7 @@ const FrameBackground = () => {
         // Set canvas dimensions once to match viewport (mobile) or image (desktop)
         if (!canvasReady) {
           if (isMobile) {
-            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const dpr = 1; // Cap to 1.0 on mobile to bypass high-DPI scaling overhead
             canvas.width = window.innerWidth * dpr;
             canvas.height = window.innerHeight * dpr;
           } else {
@@ -172,7 +172,7 @@ const FrameBackground = () => {
       const targetFrame = autoplayFrame;
 
       // Smoothly ease the rendered frame towards the target frame (adds momentum / inertia)
-      const easeAmount = isMobile ? 0.12 : 0.2;
+      const easeAmount = isMobile ? 0.16 : 0.2;
       if (Math.abs(targetFrame - renderedFrame) < 0.05) {
         renderedFrame = targetFrame;
       } else {
@@ -283,7 +283,7 @@ const FrameBackground = () => {
         trigger: scrollTarget || document.documentElement,
         start: () => window.innerWidth < 768 ? 'top 20%' : 'top 80%', // Start later on mobile, early on desktop
         end: 'bottom bottom', // Run animation all the way to the bottom of the page
-        scrub: 1.5, // Catch up over 1.5 seconds for a smoother glide
+        scrub: isMobile ? 1.0 : 1.5, // Tighter catch up on mobile for responsive tracking
         onEnter: () => {
           autoplayActive = true;
           lastTime = performance.now();
