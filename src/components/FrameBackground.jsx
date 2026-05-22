@@ -105,7 +105,7 @@ const FrameBackground = () => {
 
     // Pre-decode a window of frames in the direction of travel to prevent texture eviction lag
     const preDecodeWindow = (currentIndex, direction) => {
-      const windowSize = isMobile ? 8 : 15;
+      const windowSize = isMobile ? 12 : 15;
       
       for (let i = 1; i <= windowSize; i++) {
         const targetIdx = currentIndex + direction * i;
