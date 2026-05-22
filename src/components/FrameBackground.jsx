@@ -29,8 +29,16 @@ const FrameBackground = () => {
 
     // Store the current frame index
     const animState = { frame: 0 };
-    let renderRequested = false;
     let canvasReady = false;
+    let lastRenderedFrame = -1;
+
+    // Autoplay state
+    let autoplayActive = false;
+    let autoplayFrame = 0;
+    let lastTime = performance.now();
+    let tickActive = true;
+    const fps = 24; // cinematic playback speed
+    const frameInterval = 1000 / fps;
 
     // Helper to build frame URL
     const getFrameUrl = (index) => {
@@ -39,9 +47,7 @@ const FrameBackground = () => {
     };
 
     // Function to render the current frame
-    const renderFrame = () => {
-      renderRequested = false;
-      const frameIndex = Math.floor(animState.frame);
+    const renderFrame = (frameIndex) => {
       const img = images[frameIndex];
       if (img && img.complete && img.naturalWidth !== 0) {
         // Set canvas dimensions once to match the image
@@ -62,12 +68,51 @@ const FrameBackground = () => {
       }
     };
 
-    const requestRender = () => {
-      if (!renderRequested) {
-        renderRequested = true;
-        requestAnimationFrame(renderFrame);
+    // Animation tick loop running at cinematic 24fps
+    const tick = (now) => {
+      if (!tickActive) return;
+
+      const scrollFrame = animState.frame;
+
+      if (autoplayActive && autoplayFrame < TOTAL_FRAMES - 1) {
+        const delta = now - lastTime;
+        if (delta >= frameInterval) {
+          const framesToAdvance = Math.floor(delta / frameInterval);
+          autoplayFrame = autoplayFrame + framesToAdvance;
+          lastTime = now - (delta % frameInterval);
+        }
       }
+
+      // Clamp autoplayFrame to a window relative to the scroll position.
+      // This ensures the animation doesn't play to the end too early and is active at the bottom.
+      const LIMIT = 50; // Play up to 50 frames ahead of the current scroll position (~2 seconds of autoplay)
+
+      if (autoplayFrame < scrollFrame) {
+        autoplayFrame = scrollFrame;
+      } else if (autoplayFrame > scrollFrame + LIMIT) {
+        autoplayFrame = scrollFrame + LIMIT;
+      }
+
+      // Ensure autoplayFrame never exceeds the total frames count
+      if (autoplayFrame > TOTAL_FRAMES - 1) {
+        autoplayFrame = TOTAL_FRAMES - 1;
+      }
+
+      const targetFrame = Math.floor(autoplayFrame);
+
+      if (lastRenderedFrame !== targetFrame) {
+        lastRenderedFrame = targetFrame;
+        renderFrame(targetFrame);
+      }
+
+      requestAnimationFrame(tick);
     };
+
+    // Start the tick loop
+    requestAnimationFrame((now) => {
+      lastTime = now;
+      tick(now);
+    });
 
     // --- Prioritized frame loading ---
 
@@ -102,10 +147,8 @@ const FrameBackground = () => {
       const priorityEnd = Math.min(PRIORITY_BATCH, TOTAL_FRAMES);
       await loadFramesBatched(0, priorityEnd, priorityEnd);
 
-      // Render the first frame as soon as priority batch is done
-      if (animState.frame === 0) {
-        requestRender();
-      }
+      // Force render frame 0 as soon as priority batch is done
+      lastRenderedFrame = -1;
 
       // Phase 2: Load the remaining frames in small batches in the background
       await loadFramesBatched(priorityEnd, TOTAL_FRAMES, BATCH_SIZE);
@@ -119,19 +162,40 @@ const FrameBackground = () => {
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: scrollTarget || document.documentElement,
-        start: 'top bottom', // Start animation as soon as the top of the container enters the viewport
-        end: 'bottom bottom',
+        start: 'top 80%', // Start animation when the top of the container reaches 80% of the viewport height (even sooner)
+        end: 'bottom bottom', // Run animation all the way to the bottom of the page
         scrub: 1.5, // Catch up over 1.5 seconds for a smoother glide
+        onEnter: () => {
+          autoplayActive = true;
+          lastTime = performance.now();
+        },
+        onLeaveBack: () => {
+          // Reset when scrolling back above the trigger (to the Hero)
+          autoplayActive = false;
+          autoplayFrame = 0;
+          animState.frame = 0;
+        },
+        onUpdate: (self) => {
+          if (self.direction === 1) {
+            // Scrolling down: make sure autoplay is active
+            if (!autoplayActive) {
+              autoplayActive = true;
+              lastTime = performance.now();
+            }
+          } else if (self.direction === -1) {
+            // Scrolling up: reverse animation to follow scroll position,
+            // but disable autoplay so it doesn't move forward when scroll stops.
+            autoplayActive = false;
+            autoplayFrame = animState.frame;
+          }
+        }
       }
     });
 
     tl.to(animState, {
       frame: TOTAL_FRAMES - 1,
       ease: 'none', // Linear frame progression for consistent scroll speed
-      duration: 1,
-      onUpdate: () => {
-        requestRender();
-      }
+      duration: 1
     });
 
     // Handle ResizeObserver for dynamic heights (debounced)
@@ -148,6 +212,7 @@ const FrameBackground = () => {
     // Cleanup
     return () => {
       tl.kill();
+      tickActive = false; // Stop the animation loop
       clearTimeout(resizeTimeout);
       if (resizeObserver && scrollTarget) {
         resizeObserver.unobserve(scrollTarget);

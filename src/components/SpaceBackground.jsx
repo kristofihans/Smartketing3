@@ -417,8 +417,8 @@ const SpaceBackground = () => {
     const scrollTarget = document.querySelector('.app__content') || document.body;
     const trigger = ScrollTrigger.create({
       trigger: scrollTarget,
-      start: 'top bottom', // Start animation as soon as the top of the container enters the viewport
-      end: 'bottom bottom',
+      start: 'top 80%', // Start animation when the top of the container reaches 80% of the viewport height (even sooner)
+      end: '+=150%', // Play the entire animation over a shorter scroll distance (150% of the viewport height)
       scrub: 1,
       onUpdate: (self) => {
         animState.progress = self.progress;
