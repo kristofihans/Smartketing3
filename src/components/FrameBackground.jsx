@@ -5,7 +5,7 @@ import './FrameBackground.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const TOTAL_FRAMES = 241; // frames from BestUltimateFrames folder
+const TOTAL_FRAMES = 241; // frames from final folder
 const START_FRAME = 1;
 const PRIORITY_BATCH = 30; // first N frames to load with high priority
 const BATCH_SIZE = 10; // load remaining frames in batches of this size
@@ -35,7 +35,7 @@ const FrameBackground = () => {
     // Helper to build frame URL
     const getFrameUrl = (index) => {
       const frameNum = String(START_FRAME + index).padStart(3, '0');
-      return `${import.meta.env.BASE_URL}BestUltimateFrames/ezgif-frame-${frameNum}.jpg`;
+      return `${import.meta.env.BASE_URL}final/ezgif-frame-${frameNum}.jpg`;
     };
 
     // Function to render the current frame
@@ -117,8 +117,8 @@ const FrameBackground = () => {
 
     const tl = gsap.timeline({
       scrollTrigger: {
-        trigger: document.documentElement,
-        start: 'top+=150px top',
+        trigger: scrollTarget || document.documentElement,
+        start: 'top top',
         end: 'bottom bottom',
         scrub: 1.0, // Catch up over 1 second for a smooth glide
       }
@@ -126,7 +126,7 @@ const FrameBackground = () => {
 
     tl.to(animState, {
       frame: TOTAL_FRAMES - 1,
-      ease: 'power2.out', // Fast response initially, then autoplays and decelerates smoothly
+      ease: 'none', // Linear frame progression for consistent scroll speed
       duration: 1,
       onUpdate: () => {
         // Guarantee index is an integer
