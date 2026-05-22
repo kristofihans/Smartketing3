@@ -26,8 +26,8 @@ const FrameBackground = () => {
     const priorityBatch = isMobile ? 15 : 30;
     const limit = isMobile ? 20 : 50;
 
-    // Enable image smoothing based on device performance capability
-    ctx.imageSmoothingEnabled = true;
+    // Enable/disable image smoothing based on device performance capability
+    ctx.imageSmoothingEnabled = !isMobile;
     ctx.imageSmoothingQuality = isMobile ? 'low' : 'high';
 
     // Array to hold the preloaded Image objects

@@ -28,7 +28,7 @@ fs.readdir(inputDir, async (err, files) => {
       const outputPath = path.join(outputDir, outputName);
       
       return sharp(inputPath)
-        .resize({ width: 1920 }) // Downscale to 1080p (1920x1080) to significantly boost mobile decoding speed
+        .resize({ width: 1280 }) // Downscale to 720p (1280x720) to significantly boost mobile decoding speed
         .webp({ quality: 75 }) // Save as WebP at quality 75 for optimal visual fidelity
         .toFile(outputPath)
         .catch(e => {
