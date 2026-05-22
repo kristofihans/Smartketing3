@@ -5,7 +5,7 @@ import './FrameBackground.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const START_FRAME = 25;
+
 const BATCH_SIZE = 10; // load remaining frames in batches of this size
 
 const FrameBackground = () => {
@@ -19,12 +19,13 @@ const FrameBackground = () => {
     if (!ctx) return;
 
     const isMobile = window.innerWidth < 768;
-    const folderName = isMobile ? 'final_mobile' : 'final';
-    const ext = isMobile ? 'webp' : 'jpg';
-    const frameStep = isMobile ? 2 : 1;
-    const totalFrames = isMobile ? Math.ceil(217 / 2) : 217;
+    const folderName = isMobile ? 'LastFramesmobile' : 'LastFrames';
+    const ext = 'webp';
+    const frameStep = 1;
+    const startFrame = isMobile ? 16 : 1;
+    const totalFrames = isMobile ? 177 : 192;
     const priorityBatch = 30;
-    const limit = isMobile ? 20 : 50;
+    const limit = isMobile ? 30 : 50;
 
     // Enable/disable image smoothing based on device performance capability
     ctx.imageSmoothingEnabled = !isMobile;
@@ -51,7 +52,7 @@ const FrameBackground = () => {
 
     // Helper to build frame URL
     const getFrameUrl = (index) => {
-      const frameNum = String(START_FRAME + (index * frameStep)).padStart(3, '0');
+      const frameNum = String(startFrame + (index * frameStep)).padStart(3, '0');
       return `${import.meta.env.BASE_URL}${folderName}/ezgif-frame-${frameNum}.${ext}`;
     };
 
@@ -95,9 +96,9 @@ const FrameBackground = () => {
         }
 
         // Apply a smooth dark overlay near the end to transition to black
-        const fadeStartFrame = totalFrames - (isMobile ? 10 : 20);
+        const fadeStartFrame = totalFrames - 20;
         if (frameIndex >= fadeStartFrame) {
-          const fadeProgress = Math.min(1, (frameIndex - fadeStartFrame) / (isMobile ? 10 : 20));
+          const fadeProgress = Math.min(1, (frameIndex - fadeStartFrame) / 20);
           ctx.fillStyle = `rgba(0, 0, 0, ${fadeProgress * 0.7})`;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
