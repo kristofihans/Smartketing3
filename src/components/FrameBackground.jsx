@@ -24,6 +24,9 @@ const FrameBackground = () => {
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
+    const isMobile = window.innerWidth < 768;
+    const folderName = isMobile ? 'final_mobile' : 'final';
+
     // Array to hold the preloaded Image objects
     const images = new Array(TOTAL_FRAMES);
 
@@ -43,7 +46,7 @@ const FrameBackground = () => {
     // Helper to build frame URL
     const getFrameUrl = (index) => {
       const frameNum = String(START_FRAME + index).padStart(3, '0');
-      return `${import.meta.env.BASE_URL}final/ezgif-frame-${frameNum}.webp`;
+      return `${import.meta.env.BASE_URL}${folderName}/ezgif-frame-${frameNum}.webp`;
     };
 
     // Function to render the current frame
