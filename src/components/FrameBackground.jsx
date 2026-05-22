@@ -35,7 +35,7 @@ const FrameBackground = () => {
     // Helper to build frame URL
     const getFrameUrl = (index) => {
       const frameNum = String(START_FRAME + index).padStart(3, '0');
-      return `${import.meta.env.BASE_URL}final/ezgif-frame-${frameNum}.jpg`;
+      return `${import.meta.env.BASE_URL}final/ezgif-frame-${frameNum}.webp`;
     };
 
     // Function to render the current frame
@@ -118,7 +118,7 @@ const FrameBackground = () => {
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: scrollTarget || document.documentElement,
-        start: 'top top',
+        start: 'top bottom', // Start animation as soon as the top of the container enters the viewport
         end: 'bottom bottom',
         scrub: 1.0, // Catch up over 1 second for a smooth glide
       }

@@ -417,7 +417,7 @@ const SpaceBackground = () => {
     const scrollTarget = document.querySelector('.app__content') || document.body;
     const trigger = ScrollTrigger.create({
       trigger: scrollTarget,
-      start: 'top top',
+      start: 'top bottom', // Start animation as soon as the top of the container enters the viewport
       end: 'bottom bottom',
       scrub: 1,
       onUpdate: (self) => {

@@ -3,7 +3,7 @@ const path = require('path');
 const sharp = require('sharp');
 
 const PUBLIC_DIR = path.join(__dirname, 'public');
-const FRAMES_DIR = path.join(PUBLIC_DIR, 'ultimateframes');
+const FRAMES_DIR = path.join(PUBLIC_DIR, 'final');
 
 async function optimizeImage(filePath, options = {}) {
   const ext = path.extname(filePath);
@@ -75,7 +75,7 @@ async function run() {
       totalOriginal += fs.statSync(fullPath).size;
       
       // Resize 4K frames (3840x2160) to Full HD (1920x1080) for performance
-      await optimizeImage(fullPath, { width: 1920, quality: 75 });
+      await optimizeImage(fullPath, { width: 1920, quality: 85 });
       
       const webpPath = fullPath.replace(/\.jpg$/, '.webp');
       totalCompressed += fs.statSync(webpPath).size;
