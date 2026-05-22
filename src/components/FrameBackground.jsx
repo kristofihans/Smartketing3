@@ -21,10 +21,10 @@ const FrameBackground = () => {
     const isMobile = window.innerWidth < 768;
     const folderName = isMobile ? 'final_mobile' : 'final';
     const ext = isMobile ? 'webp' : 'jpg';
-    const frameStep = isMobile ? 2 : 1;
-    const totalFrames = isMobile ? Math.ceil(217 / 2) : 217;
-    const priorityBatch = isMobile ? 15 : 30;
-    const limit = isMobile ? 25 : 50;
+    const frameStep = isMobile ? 3 : 1;
+    const totalFrames = isMobile ? Math.ceil(217 / 3) : 217;
+    const priorityBatch = isMobile ? 10 : 30;
+    const limit = isMobile ? 12 : 50;
 
     // Enable image smoothing based on device performance capability
     ctx.imageSmoothingEnabled = true;
@@ -58,13 +58,40 @@ const FrameBackground = () => {
     const renderFrame = (frameIndex) => {
       const img = images[frameIndex];
       if (img && img.complete && img.naturalWidth !== 0) {
-        // Set canvas dimensions once to match the image
+        // Set canvas dimensions once to match viewport (mobile) or image (desktop)
         if (!canvasReady) {
-          canvas.width = img.width;
-          canvas.height = img.height;
+          if (isMobile) {
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            canvas.width = window.innerWidth * dpr;
+            canvas.height = window.innerHeight * dpr;
+          } else {
+            canvas.width = img.width;
+            canvas.height = img.height;
+          }
           canvasReady = true;
         }
-        ctx.drawImage(img, 0, 0);
+
+        if (isMobile) {
+          // Draw image to cover the canvas (equivalent to object-fit: cover)
+          const imgRatio = img.width / img.height;
+          const canvasRatio = canvas.width / canvas.height;
+          let drawWidth, drawHeight, offsetX, offsetY;
+
+          if (imgRatio > canvasRatio) {
+            drawHeight = canvas.height;
+            drawWidth = canvas.height * imgRatio;
+            offsetX = (canvas.width - drawWidth) / 2;
+            offsetY = 0;
+          } else {
+            drawWidth = canvas.width;
+            drawHeight = canvas.width / imgRatio;
+            offsetX = 0;
+            offsetY = (canvas.height - drawHeight) / 2;
+          }
+          ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+        } else {
+          ctx.drawImage(img, 0, 0);
+        }
 
         // Apply a smooth dark overlay near the end to transition to black
         const fadeStartFrame = totalFrames - (isMobile ? 10 : 20);
@@ -78,11 +105,10 @@ const FrameBackground = () => {
 
     // Pre-decode a window of frames in the direction of travel to prevent texture eviction lag
     const preDecodeWindow = (currentIndex, direction) => {
-      const windowSize = isMobile ? 8 : 15;
-      const step = isMobile ? 2 : 1;
+      const windowSize = isMobile ? 4 : 15;
       
       for (let i = 1; i <= windowSize; i++) {
-        const targetIdx = currentIndex + direction * i * step;
+        const targetIdx = currentIndex + direction * i;
         if (targetIdx >= 0 && targetIdx < totalFrames) {
           const img = images[targetIdx];
           if (img && img.complete && typeof img.decode === 'function') {
@@ -283,6 +309,11 @@ const FrameBackground = () => {
       resizeObserver.observe(scrollTarget);
     }
 
+    const handleResize = () => {
+      canvasReady = false;
+    };
+    window.addEventListener('resize', handleResize);
+
     // Cleanup
     return () => {
       tl.kill();
@@ -291,6 +322,7 @@ const FrameBackground = () => {
       if (resizeObserver && scrollTarget) {
         resizeObserver.unobserve(scrollTarget);
       }
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 
