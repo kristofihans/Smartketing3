@@ -35,32 +35,53 @@ const FrameBackground = () => {
     // Helper to build frame URL
     const getFrameUrl = (index) => {
       const frameNum = String(START_FRAME + index).padStart(3, '0');
-      return `${import.meta.env.BASE_URL}BestUltimateFrames/ezgif-frame-${frameNum}.webp`;
+      return `${import.meta.env.BASE_URL}BestUltimateFrames/ezgif-frame-${frameNum}.jpg`;
+    };
+
+    // Function to render the current frame
+    const renderFrame = () => {
+      renderRequested = false;
+      const img = images[animState.frame];
+      if (img && img.complete && img.naturalWidth !== 0) {
+        // Set canvas dimensions once to match the image
+        if (!canvasReady) {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          canvasReady = true;
+        }
+        ctx.drawImage(img, 0, 0);
+
+        // Apply a smooth dark overlay near the end to transition to black
+        const fadeStartFrame = TOTAL_FRAMES - 20;
+        if (animState.frame >= fadeStartFrame) {
+          const fadeProgress = Math.min(1, (animState.frame - fadeStartFrame) / 20);
+          ctx.fillStyle = `rgba(0, 0, 0, ${fadeProgress * 0.7})`;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+    };
+
+    const requestRender = () => {
+      if (!renderRequested) {
+        renderRequested = true;
+        requestAnimationFrame(renderFrame);
+      }
     };
 
     // --- Prioritized frame loading ---
- 
+
     // Load a single frame and return a promise
     const loadFrame = (index) => {
       return new Promise((resolve) => {
         const img = new Image();
         img.decoding = 'async';
-        images[index] = img; // Assign immediately so it can be drawn if needed
         img.src = getFrameUrl(index);
-        
-        img.onload = () => {
-          if (typeof img.decode === 'function') {
-            img.decode()
-              .then(() => resolve())
-              .catch(() => resolve());
-          } else {
-            resolve();
-          }
-        };
+        img.onload = () => resolve();
         img.onerror = () => resolve(); // don't block on errors
+        images[index] = img;
       });
     };
- 
+
     // Load frames in sequential batches to avoid overwhelming the browser
     const loadFramesBatched = async (startIdx, endIdx, batchSize) => {
       for (let i = startIdx; i < endIdx; i += batchSize) {
@@ -73,86 +94,43 @@ const FrameBackground = () => {
         await Promise.all(batch);
       }
     };
- 
+
     // Start loading: priority frames first, then the rest in background
     const startLoading = async () => {
       // Phase 1: Load the first batch with high priority (needed for initial scroll)
       const priorityEnd = Math.min(PRIORITY_BATCH, TOTAL_FRAMES);
       await loadFramesBatched(0, priorityEnd, priorityEnd);
- 
+
       // Render the first frame as soon as priority batch is done
       if (animState.frame === 0) {
         requestRender();
       }
- 
+
       // Phase 2: Load the remaining frames in small batches in the background
       await loadFramesBatched(priorityEnd, TOTAL_FRAMES, BATCH_SIZE);
     };
- 
-    const renderFrame = () => {
-      renderRequested = false;
-      const frameFloat = animState.frame;
-      const currentFrame = Math.floor(frameFloat);
-      const nextFrame = Math.min(TOTAL_FRAMES - 1, currentFrame + 1);
-      const progress = frameFloat - currentFrame;
-
-      const img1 = images[currentFrame];
-      const img2 = images[nextFrame];
-
-      if (img1 && img1.complete && img1.naturalWidth !== 0) {
-        // Set canvas dimensions once to match the image
-        if (!canvasReady) {
-          canvas.width = img1.width;
-          canvas.height = img1.height;
-          canvasReady = true;
-        }
-
-        // Draw the base frame
-        ctx.drawImage(img1, 0, 0);
-
-        // Blend the next frame if progress is significant and the image is ready
-        if (progress > 0.01 && img2 && img2.complete && img2.naturalWidth !== 0) {
-          ctx.globalAlpha = progress;
-          ctx.drawImage(img2, 0, 0);
-          ctx.globalAlpha = 1.0; // Reset alpha
-        }
-
-        // Apply a smooth dark overlay near the end to transition to black
-        const fadeStartFrame = TOTAL_FRAMES - 20;
-        if (frameFloat >= fadeStartFrame) {
-          const fadeProgress = Math.min(1, (frameFloat - fadeStartFrame) / 20);
-          ctx.fillStyle = `rgba(0, 0, 0, ${fadeProgress * 0.7})`;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-      }
-    };
- 
-    const requestRender = () => {
-      if (!renderRequested) {
-        renderRequested = true;
-        requestAnimationFrame(renderFrame);
-      }
-    };
 
     startLoading();
- 
+
     // Set up a GSAP ScrollTrigger timeline to scrub the frames with easing
     const scrollTarget = document.querySelector('.app__content');
- 
+
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: document.documentElement,
-        start: 'top top',
+        start: 'top+=150px top',
         end: 'bottom bottom',
         scrub: 1.0, // Catch up over 1 second for a smooth glide
       }
     });
- 
+
     tl.to(animState, {
       frame: TOTAL_FRAMES - 1,
-      ease: 'none', // Linear mapping aligns perfectly with scroll speed
+      ease: 'power2.out', // Fast response initially, then autoplays and decelerates smoothly
       duration: 1,
       onUpdate: () => {
+        // Guarantee index is an integer
+        animState.frame = Math.floor(animState.frame);
         requestRender();
       }
     });
