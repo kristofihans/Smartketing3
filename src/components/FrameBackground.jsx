@@ -21,10 +21,10 @@ const FrameBackground = () => {
     const isMobile = window.innerWidth < 768;
     const folderName = isMobile ? 'final_mobile' : 'final';
     const ext = isMobile ? 'webp' : 'jpg';
-    const frameStep = isMobile ? 3 : 1;
-    const totalFrames = isMobile ? Math.ceil(217 / 3) : 217;
-    const priorityBatch = isMobile ? 10 : 30;
-    const limit = isMobile ? 12 : 50;
+    const frameStep = isMobile ? 2 : 1;
+    const totalFrames = isMobile ? Math.ceil(217 / 2) : 217;
+    const priorityBatch = isMobile ? 15 : 30;
+    const limit = isMobile ? 20 : 50;
 
     // Enable image smoothing based on device performance capability
     ctx.imageSmoothingEnabled = true;
@@ -105,7 +105,7 @@ const FrameBackground = () => {
 
     // Pre-decode a window of frames in the direction of travel to prevent texture eviction lag
     const preDecodeWindow = (currentIndex, direction) => {
-      const windowSize = isMobile ? 4 : 15;
+      const windowSize = isMobile ? 8 : 15;
       
       for (let i = 1; i <= windowSize; i++) {
         const targetIdx = currentIndex + direction * i;

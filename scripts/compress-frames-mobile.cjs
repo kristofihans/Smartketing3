@@ -16,20 +16,20 @@ fs.readdir(inputDir, async (err, files) => {
   }
 
   const jpgFiles = files.filter(f => f.endsWith('.jpg'));
-  console.log(`Found ${jpgFiles.length} JPG frames to compress for mobile.`);
+  console.log(`Found ${jpgFiles.length} JPG frames to resize and compress for mobile.`);
 
-  // Process in batches of 10 to avoid excessive memory usage at 4K resolution
-  const batchSize = 10;
+  // Process in batches of 15
+  const batchSize = 15;
   for (let i = 0; i < jpgFiles.length; i += batchSize) {
     const batch = jpgFiles.slice(i, i + batchSize);
     await Promise.all(batch.map(file => {
       const inputPath = path.join(inputDir, file);
-      // Output as .webp with same base name but new extension
       const outputName = file.replace(/\.jpg$/, '.webp');
       const outputPath = path.join(outputDir, outputName);
       
       return sharp(inputPath)
-        .webp({ quality: 65 }) // Compress to WebP at quality 65 to keep size low but preserve details
+        .resize({ width: 1920 }) // Downscale to 1080p (1920x1080) to significantly boost mobile decoding speed
+        .webp({ quality: 75 }) // Save as WebP at quality 75 for optimal visual fidelity
         .toFile(outputPath)
         .catch(e => {
           console.error(`Error compressing ${file}:`, e);
@@ -37,5 +37,5 @@ fs.readdir(inputDir, async (err, files) => {
     }));
     console.log(`Processed batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(jpgFiles.length / batchSize)}`);
   }
-  console.log('All frames compressed for mobile successfully!');
+  console.log('All frames scaled and compressed for mobile successfully!');
 });
