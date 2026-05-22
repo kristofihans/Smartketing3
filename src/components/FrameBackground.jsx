@@ -20,7 +20,7 @@ const FrameBackground = () => {
 
     const isMobile = window.innerWidth < 768;
     const folderName = isMobile ? 'final_mobile' : 'final';
-    const ext = isMobile ? 'webp' : 'jpg';
+    const ext = 'jpg';
     const frameStep = isMobile ? 2 : 1;
     const totalFrames = isMobile ? Math.ceil(217 / 2) : 217;
     const priorityBatch = isMobile ? 15 : 30;
