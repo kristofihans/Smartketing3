@@ -5,8 +5,8 @@ import './FrameBackground.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const TOTAL_FRAMES = 241; // frames from final folder
-const START_FRAME = 1;
+const TOTAL_FRAMES = 219; // remaining frames from final folder (23 to 241)
+const START_FRAME = 23;
 const PRIORITY_BATCH = 30; // first N frames to load with high priority
 const BATCH_SIZE = 10; // load remaining frames in batches of this size
 
@@ -81,16 +81,20 @@ const FrameBackground = () => {
           autoplayFrame = autoplayFrame + framesToAdvance;
           lastTime = now - (delta % frameInterval);
         }
-      }
 
-      // Clamp autoplayFrame to a window relative to the scroll position.
-      // This ensures the animation doesn't play to the end too early and is active at the bottom.
-      const LIMIT = 50; // Play up to 50 frames ahead of the current scroll position (~2 seconds of autoplay)
+        // Clamp autoplayFrame to a window relative to the scroll position.
+        // This ensures the animation doesn't play to the end too early and is active at the bottom.
+        const LIMIT = 50; // Play up to 50 frames ahead of the current scroll position (~2 seconds of autoplay)
 
-      if (autoplayFrame < scrollFrame) {
+        if (autoplayFrame < scrollFrame) {
+          autoplayFrame = scrollFrame;
+        } else if (autoplayFrame > scrollFrame + LIMIT) {
+          autoplayFrame = scrollFrame + LIMIT;
+        }
+      } else {
+        // If autoplay is not active (e.g. scrolling up or reset above trigger),
+        // let autoplayFrame follow the GSAP scrubbed scrollFrame exactly.
         autoplayFrame = scrollFrame;
-      } else if (autoplayFrame > scrollFrame + LIMIT) {
-        autoplayFrame = scrollFrame + LIMIT;
       }
 
       // Ensure autoplayFrame never exceeds the total frames count
@@ -162,7 +166,7 @@ const FrameBackground = () => {
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: scrollTarget || document.documentElement,
-        start: 'top 80%', // Start animation when the top of the container reaches 80% of the viewport height (even sooner)
+        start: () => window.innerWidth < 768 ? 'top 20%' : 'top 80%', // Start later on mobile, early on desktop
         end: 'bottom bottom', // Run animation all the way to the bottom of the page
         scrub: 1.5, // Catch up over 1.5 seconds for a smoother glide
         onEnter: () => {
@@ -183,10 +187,8 @@ const FrameBackground = () => {
               lastTime = performance.now();
             }
           } else if (self.direction === -1) {
-            // Scrolling up: reverse animation to follow scroll position,
-            // but disable autoplay so it doesn't move forward when scroll stops.
+            // Scrolling up: disable autoplay so it doesn't drift forward when stopped
             autoplayActive = false;
-            autoplayFrame = animState.frame;
           }
         }
       }
