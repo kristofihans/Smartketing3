@@ -41,7 +41,8 @@ const FrameBackground = () => {
     // Function to render the current frame
     const renderFrame = () => {
       renderRequested = false;
-      const img = images[animState.frame];
+      const frameIndex = Math.floor(animState.frame);
+      const img = images[frameIndex];
       if (img && img.complete && img.naturalWidth !== 0) {
         // Set canvas dimensions once to match the image
         if (!canvasReady) {
@@ -53,8 +54,8 @@ const FrameBackground = () => {
 
         // Apply a smooth dark overlay near the end to transition to black
         const fadeStartFrame = TOTAL_FRAMES - 20;
-        if (animState.frame >= fadeStartFrame) {
-          const fadeProgress = Math.min(1, (animState.frame - fadeStartFrame) / 20);
+        if (frameIndex >= fadeStartFrame) {
+          const fadeProgress = Math.min(1, (frameIndex - fadeStartFrame) / 20);
           ctx.fillStyle = `rgba(0, 0, 0, ${fadeProgress * 0.7})`;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
@@ -120,7 +121,7 @@ const FrameBackground = () => {
         trigger: scrollTarget || document.documentElement,
         start: 'top bottom', // Start animation as soon as the top of the container enters the viewport
         end: 'bottom bottom',
-        scrub: 1.0, // Catch up over 1 second for a smooth glide
+        scrub: 1.5, // Catch up over 1.5 seconds for a smoother glide
       }
     });
 
@@ -129,8 +130,6 @@ const FrameBackground = () => {
       ease: 'none', // Linear frame progression for consistent scroll speed
       duration: 1,
       onUpdate: () => {
-        // Guarantee index is an integer
-        animState.frame = Math.floor(animState.frame);
         requestRender();
       }
     });
