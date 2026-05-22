@@ -5,8 +5,8 @@ import './FrameBackground.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const TOTAL_FRAMES = 219; // remaining frames from final folder (23 to 241)
-const START_FRAME = 23;
+const TOTAL_FRAMES = 213; // remaining frames from final folder (29 to 241)
+const START_FRAME = 29;
 const PRIORITY_BATCH = 30; // first N frames to load with high priority
 const BATCH_SIZE = 10; // load remaining frames in batches of this size
 
