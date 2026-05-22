@@ -20,6 +20,7 @@ const FrameBackground = () => {
 
     const isMobile = window.innerWidth < 768;
     const folderName = isMobile ? 'final_mobile' : 'final';
+    const ext = isMobile ? 'webp' : 'jpg';
     const frameStep = isMobile ? 2 : 1;
     const totalFrames = isMobile ? Math.ceil(217 / 2) : 217;
     const priorityBatch = isMobile ? 15 : 30;
@@ -50,7 +51,7 @@ const FrameBackground = () => {
     // Helper to build frame URL
     const getFrameUrl = (index) => {
       const frameNum = String(START_FRAME + (index * frameStep)).padStart(3, '0');
-      return `${import.meta.env.BASE_URL}${folderName}/ezgif-frame-${frameNum}.webp`;
+      return `${import.meta.env.BASE_URL}${folderName}/ezgif-frame-${frameNum}.${ext}`;
     };
 
     // Function to render the current frame
