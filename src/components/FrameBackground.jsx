@@ -37,6 +37,7 @@ const FrameBackground = () => {
     let canvasReady = false;
     let lastRenderedFrame = -1;
     let renderedFrame = 0;
+    let lastScrollFrame = 0;
 
     // Autoplay state
     let autoplayActive = false;
@@ -74,11 +75,41 @@ const FrameBackground = () => {
       }
     };
 
+    // Pre-decode a window of frames in the direction of travel to prevent texture eviction lag
+    const preDecodeWindow = (currentIndex, direction) => {
+      const windowSize = isMobile ? 8 : 15;
+      const step = isMobile ? 2 : 1;
+      
+      for (let i = 1; i <= windowSize; i++) {
+        const targetIdx = currentIndex + direction * i * step;
+        if (targetIdx >= 0 && targetIdx < totalFrames) {
+          const img = images[targetIdx];
+          if (img && img.complete && typeof img.decode === 'function') {
+            img.decode().catch(() => {});
+          }
+        }
+      }
+    };
+
     // Animation tick loop running at cinematic 24fps
     const tick = (now) => {
       if (!tickActive) return;
 
       const scrollFrame = animState.frame;
+      const dScroll = scrollFrame - lastScrollFrame;
+      lastScrollFrame = scrollFrame;
+
+      if (dScroll < 0) {
+        // User is scrolling up: subtract the scroll delta from autoplayFrame
+        // so that the reverse animation is directly connected to the scroll distance
+        autoplayFrame = autoplayFrame + dScroll;
+        autoplayActive = false;
+      } else if (dScroll > 0) {
+        if (!autoplayActive) {
+          autoplayActive = true;
+          lastTime = now;
+        }
+      }
 
       if (autoplayActive && autoplayFrame < totalFrames - 1) {
         const delta = now - lastTime;
@@ -95,9 +126,14 @@ const FrameBackground = () => {
           autoplayFrame = scrollFrame + limit;
         }
       } else {
-        // If autoplay is not active (e.g. scrolling up or reset above trigger),
-        // let autoplayFrame follow the GSAP scrubbed scrollFrame exactly.
-        autoplayFrame = scrollFrame;
+        // Smoothly ease autoplayFrame down to scrollFrame when scrolling up or stopped
+        const reverseEase = isMobile ? 0.15 : 0.12;
+        autoplayFrame = autoplayFrame + (scrollFrame - autoplayFrame) * reverseEase;
+
+        // Ensure it doesn't fall below the current scroll frame
+        if (autoplayFrame < scrollFrame) {
+          autoplayFrame = scrollFrame;
+        }
       }
 
       // Ensure autoplayFrame never exceeds the total frames count
@@ -120,6 +156,17 @@ const FrameBackground = () => {
       if (lastRenderedFrame !== displayFrame) {
         lastRenderedFrame = displayFrame;
         renderFrame(displayFrame);
+
+        // Trigger look-ahead decoding in the current scroll direction
+        let direction = 1;
+        if (dScroll < 0) {
+          direction = -1;
+        } else if (dScroll > 0) {
+          direction = 1;
+        } else {
+          direction = autoplayActive ? 1 : -1;
+        }
+        preDecodeWindow(displayFrame, direction);
       }
 
       requestAnimationFrame(tick);
@@ -201,6 +248,7 @@ const FrameBackground = () => {
           autoplayActive = false;
           autoplayFrame = 0;
           animState.frame = 0;
+          lastScrollFrame = 0;
         },
         onUpdate: (self) => {
           if (self.direction === 1) {
