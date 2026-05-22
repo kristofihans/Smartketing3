@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import VideoCard from '../components/VideoCard';
 import Lightbox from '../components/Lightbox';
@@ -7,25 +7,20 @@ import './Gallery.css';
 
 const Gallery = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('video');
+  const tabParam = searchParams.get('tab');
+  const activeTab = (tabParam && ['foto', 'video', 'web'].includes(tabParam)) ? tabParam : 'video';
 
   // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxItems, setLightboxItems] = useState([]);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
-  // Sync tab with URL
+  // Scroll to top when searchParams change
   useEffect(() => {
     window.scrollTo(0, 0);
-    const tabParam = searchParams.get('tab');
-    if (tabParam && ['foto', 'video', 'web'].includes(tabParam)) {
-      setActiveTab(tabParam);
-    }
   }, [searchParams]);
 
   const handleTabChange = (tab) => {
-    setActiveTab(tab);
     setSearchParams({ tab });
   };
 

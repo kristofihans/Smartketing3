@@ -4,19 +4,47 @@ import './Portfolio.css';
 const VideoCard = ({ src, autoPlay = false, onClick }) => {
   const videoRef = useRef(null);
   const progressRef = useRef(null);
+  const seekFillRef = useRef(null);
+  const seekThumbRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(autoPlay);
-  const [progress, setProgress] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
   const [showControls, setShowControls] = useState(false);
   const hideTimer = useRef(null);
 
-  // Update progress bar as video plays
+  // Synchronize playing state with actual video element events
   useEffect(() => {
     const vid = videoRef.current;
     if (!vid) return;
+
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+
+    vid.addEventListener('play', handlePlay);
+    vid.addEventListener('pause', handlePause);
+
+    return () => {
+      vid.removeEventListener('play', handlePlay);
+      vid.removeEventListener('pause', handlePause);
+    };
+  }, []);
+
+  // Update progress bar styling directly (avoid React re-render cycles)
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (!vid) return;
+
     const onTime = () => {
       if (!isSeeking && vid.duration) {
-        setProgress((vid.currentTime / vid.duration) * 100);
+        const pct = (vid.currentTime / vid.duration) * 100;
+        if (seekFillRef.current) {
+          seekFillRef.current.style.width = `${pct}%`;
+        }
+        if (seekThumbRef.current) {
+          seekThumbRef.current.style.left = `${pct}%`;
+        }
+        if (progressRef.current) {
+          progressRef.current.setAttribute('aria-valuenow', Math.round(pct).toString());
+        }
       }
     };
     vid.addEventListener('timeupdate', onTime);
@@ -30,10 +58,8 @@ const VideoCard = ({ src, autoPlay = false, onClick }) => {
     if (!vid) return;
     if (vid.paused) {
       vid.play();
-      setIsPlaying(true);
     } else {
       vid.pause();
-      setIsPlaying(false);
     }
   }, []);
 
@@ -45,7 +71,16 @@ const VideoCard = ({ src, autoPlay = false, onClick }) => {
     const rect = bar.getBoundingClientRect();
     const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
     vid.currentTime = ratio * vid.duration;
-    setProgress(ratio * 100);
+    const pct = ratio * 100;
+    if (seekFillRef.current) {
+      seekFillRef.current.style.width = `${pct}%`;
+    }
+    if (seekThumbRef.current) {
+      seekThumbRef.current.style.left = `${pct}%`;
+    }
+    if (bar) {
+      bar.setAttribute('aria-valuenow', Math.round(pct).toString());
+    }
   }, []);
 
   const onSeekStart = useCallback((e) => {
@@ -71,6 +106,37 @@ const VideoCard = ({ src, autoPlay = false, onClick }) => {
     window.addEventListener('touchend', onEnd);
   }, [seekTo]);
 
+  // Support seek bar keyboard controls
+  const handleSliderKeyDown = useCallback((e) => {
+    const vid = videoRef.current;
+    if (!vid || !vid.duration) return;
+    let newTime = vid.currentTime;
+    const step = 5; // seek step in seconds
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+      newTime = Math.min(vid.duration, vid.currentTime + step);
+      e.preventDefault();
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+      newTime = Math.max(0, vid.currentTime - step);
+      e.preventDefault();
+    } else if (e.key === 'Home') {
+      newTime = 0;
+      e.preventDefault();
+    } else if (e.key === 'End') {
+      newTime = vid.duration;
+      e.preventDefault();
+    }
+    
+    if (newTime !== vid.currentTime) {
+      vid.currentTime = newTime;
+      const pct = (newTime / vid.duration) * 100;
+      if (seekFillRef.current) seekFillRef.current.style.width = `${pct}%`;
+      if (seekThumbRef.current) seekThumbRef.current.style.left = `${pct}%`;
+      if (progressRef.current) {
+        progressRef.current.setAttribute('aria-valuenow', Math.round(pct).toString());
+      }
+    }
+  }, []);
+
   // Show controls on interaction, auto-hide after delay
   const flashControls = useCallback(() => {
     setShowControls(true);
@@ -91,6 +157,19 @@ const VideoCard = ({ src, autoPlay = false, onClick }) => {
       onMouseEnter={flashControls}
       onMouseMove={flashControls}
       onTouchStart={flashControls}
+      tabIndex="0"
+      role="button"
+      aria-label="Video Player"
+      onKeyDown={(e) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          if (onClick) {
+            onClick(e);
+          } else {
+            togglePlay(e);
+          }
+        }
+      }}
     >
       <video
         ref={videoRef}
@@ -123,10 +202,17 @@ const VideoCard = ({ src, autoPlay = false, onClick }) => {
         ref={progressRef}
         onMouseDown={onSeekStart}
         onTouchStart={onSeekStart}
+        role="slider"
+        aria-label="Seek video"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="0"
+        tabIndex="0"
+        onKeyDown={handleSliderKeyDown}
       >
         <div className="video-card__seek-track">
-          <div className="video-card__seek-fill" style={{ width: `${progress}%` }} />
-          <div className="video-card__seek-thumb" style={{ left: `${progress}%` }} />
+          <div ref={seekFillRef} className="video-card__seek-fill" style={{ width: '0%' }} />
+          <div ref={seekThumbRef} className="video-card__seek-thumb" style={{ left: '0%' }} />
         </div>
       </div>
     </div>

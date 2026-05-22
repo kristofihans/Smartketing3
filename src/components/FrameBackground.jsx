@@ -45,6 +45,7 @@ const FrameBackground = () => {
     let autoplayFrame = 0;
     let lastTime = performance.now();
     let tickActive = true;
+    let tickRunning = false;
     const fps = 24; // cinematic playback speed
     const frameInterval = 1000 / fps;
 
@@ -196,14 +197,29 @@ const FrameBackground = () => {
         preDecodeWindow(displayFrame, direction);
       }
 
-      requestAnimationFrame(tick);
+      // Pause tick loop when idle to save CPU and GPU cycles
+      const isIdle = Math.abs(targetFrame - renderedFrame) < 0.05 && !autoplayActive && dScroll === 0;
+
+      if (isIdle) {
+        tickRunning = false;
+      } else {
+        requestAnimationFrame(tick);
+      }
     };
 
-    // Start the tick loop
-    requestAnimationFrame((now) => {
-      lastTime = now;
-      tick(now);
-    });
+    // Safely start or wake the tick loop
+    const wakeTick = () => {
+      if (!tickRunning && tickActive) {
+        tickRunning = true;
+        requestAnimationFrame((now) => {
+          lastTime = now;
+          tick(now);
+        });
+      }
+    };
+
+    // Start the tick loop initially
+    wakeTick();
 
     // --- Prioritized frame loading ---
 
@@ -250,9 +266,11 @@ const FrameBackground = () => {
 
       // Force render frame 0 as soon as priority batch is done
       lastRenderedFrame = -1;
+      wakeTick();
 
       // Phase 2: Load the remaining frames in small batches in the background
       await loadFramesBatched(priorityEnd, totalFrames, BATCH_SIZE);
+      wakeTick();
     };
 
     startLoading();
@@ -269,6 +287,7 @@ const FrameBackground = () => {
         onEnter: () => {
           autoplayActive = true;
           lastTime = performance.now();
+          wakeTick();
         },
         onLeaveBack: () => {
           // Reset when scrolling back above the trigger (to the Hero)
@@ -276,6 +295,7 @@ const FrameBackground = () => {
           autoplayFrame = 0;
           animState.frame = 0;
           lastScrollFrame = 0;
+          wakeTick();
         },
         onUpdate: (self) => {
           if (self.direction === 1) {
@@ -288,6 +308,7 @@ const FrameBackground = () => {
             // Scrolling up: disable autoplay so it doesn't drift forward when stopped
             autoplayActive = false;
           }
+          wakeTick();
         }
       }
     });
@@ -311,6 +332,7 @@ const FrameBackground = () => {
 
     const handleResize = () => {
       canvasReady = false;
+      wakeTick();
     };
     window.addEventListener('resize', handleResize);
 
@@ -323,6 +345,16 @@ const FrameBackground = () => {
         resizeObserver.unobserve(scrollTarget);
       }
       window.removeEventListener('resize', handleResize);
+
+      // Release image references immediately to free up GPU and system memory
+      for (let i = 0; i < images.length; i++) {
+        if (images[i]) {
+          images[i].onload = null;
+          images[i].onerror = null;
+          images[i].src = '';
+          images[i] = null;
+        }
+      }
     };
   }, []);
 

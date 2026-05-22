@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Lightbox.css';
 
@@ -6,15 +6,97 @@ const Lightbox = ({ isOpen, onClose, mediaItems = [], currentIndex = 0, setCurre
   const [loading, setLoading] = useState(true);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
+  const containerRef = useRef(null);
+  const previousFocusRef = useRef(null);
+
+  // Sync index and reset loading state on item change during render
+  const [prevIndex, setPrevIndex] = useState(currentIndex);
+  if (currentIndex !== prevIndex) {
+    setPrevIndex(currentIndex);
+    setLoading(true);
+  }
+
+  const handlePrev = useCallback(() => {
+    if (mediaItems.length <= 1) return;
+    const newIndex = currentIndex === 0 ? mediaItems.length - 1 : currentIndex - 1;
+    setCurrentIndex(newIndex);
+  }, [currentIndex, mediaItems, setCurrentIndex]);
+
+  const handleNext = useCallback(() => {
+    if (mediaItems.length <= 1) return;
+    const newIndex = currentIndex === mediaItems.length - 1 ? 0 : currentIndex + 1;
+    setCurrentIndex(newIndex);
+  }, [currentIndex, mediaItems, setCurrentIndex]);
+
+  // Focus trap and previous focus restorer
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Record the element that had focus before Lightbox opened
+    previousFocusRef.current = document.activeElement;
+
+    // Focus the close button or first element in the modal with a small delay for mounting/rendering
+    const focusTimeout = setTimeout(() => {
+      if (containerRef.current) {
+        const focusableElements = containerRef.current.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusableElements.length > 0) {
+          const closeBtn = containerRef.current.querySelector('.lightbox__close-btn');
+          if (closeBtn) {
+            closeBtn.focus();
+          } else {
+            focusableElements[0].focus();
+          }
+        }
+      }
+    }, 50);
+
+    return () => {
+      clearTimeout(focusTimeout);
+      if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {
+        previousFocusRef.current.focus();
+      }
+    };
+  }, [isOpen]);
 
   // Handle keyboard navigation and body class/styles
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
       if (e.key === 'ArrowRight' && mediaItems.length > 1) handleNext();
       if (e.key === 'ArrowLeft' && mediaItems.length > 1) handlePrev();
+
+      if (e.key === 'Tab' && containerRef.current) {
+        const focusableElements = containerRef.current.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusableElements.length === 0) {
+          e.preventDefault();
+          return;
+        }
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey) {
+          // Shift + Tab: if on first element, wrap to last
+          if (document.activeElement === firstElement) {
+            lastElement.focus();
+            e.preventDefault();
+          }
+        } else {
+          // Tab: if on last element, wrap to first
+          if (document.activeElement === lastElement) {
+            firstElement.focus();
+            e.preventDefault();
+          }
+        }
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -27,28 +109,11 @@ const Lightbox = ({ isOpen, onClose, mediaItems = [], currentIndex = 0, setCurre
       document.body.style.overflow = '';
       document.body.classList.remove('lightbox-open');
     };
-  }, [isOpen, currentIndex, mediaItems]);
-
-  // Reset loading state on item change
-  useEffect(() => {
-    setLoading(true);
-  }, [currentIndex]);
+  }, [isOpen, mediaItems, handleNext, handlePrev, onClose]);
 
   if (!isOpen || mediaItems.length === 0) return null;
 
   const currentItem = mediaItems[currentIndex];
-
-  const handlePrev = () => {
-    if (mediaItems.length <= 1) return;
-    const newIndex = currentIndex === 0 ? mediaItems.length - 1 : currentIndex - 1;
-    setCurrentIndex(newIndex);
-  };
-
-  const handleNext = () => {
-    if (mediaItems.length <= 1) return;
-    const newIndex = currentIndex === mediaItems.length - 1 ? 0 : currentIndex + 1;
-    setCurrentIndex(newIndex);
-  };
 
   // Touch handlers for mobile swipe
   const handleTouchStart = (e) => {
@@ -70,6 +135,10 @@ const Lightbox = ({ isOpen, onClose, mediaItems = [], currentIndex = 0, setCurre
   return (
     <AnimatePresence>
       <motion.div
+        ref={containerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Galerie media"
         className="lightbox"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

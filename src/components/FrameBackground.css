@@ -17,7 +17,7 @@
   background-color: #050505;
 
   /* GPU acceleration for smoother rendering */
-  will-change: contents;
+  will-change: transform;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
 }

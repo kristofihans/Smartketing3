@@ -56,8 +56,16 @@ const Navbar = () => {
       <div
         className={`navbar__hamburger ${menuOpen ? 'navbar__hamburger--open' : ''}`}
         onClick={() => setMenuOpen(!menuOpen)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setMenuOpen(!menuOpen);
+          }
+        }}
         role="button"
-        aria-label="Toggle menu"
+        aria-label="Meniu navigare"
+        aria-expanded={menuOpen}
+        tabIndex={0}
         id="navbar-hamburger"
       >
         <span />

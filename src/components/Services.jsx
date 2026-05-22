@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import { React } from 'react';
 import './Services.css';
 
 const services = [
@@ -73,7 +72,7 @@ const Services = () => {
         </div>
 
         <div className="scroll-next-wrapper">
-          <a href="#contact" className="scroll-next-link">
+          <a href="#contact" className="scroll-next-link" aria-label="Mergi la secțiunea Contact">
             <div className="scroll-chevron-icon">
               <span className="scroll-chevron" />
               <span className="scroll-chevron" />
