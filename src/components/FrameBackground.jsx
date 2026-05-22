@@ -5,9 +5,7 @@ import './FrameBackground.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const TOTAL_FRAMES = 217; // remaining frames from final folder (25 to 241)
 const START_FRAME = 25;
-const PRIORITY_BATCH = 30; // first N frames to load with high priority
 const BATCH_SIZE = 10; // load remaining frames in batches of this size
 
 const FrameBackground = () => {
@@ -20,20 +18,25 @@ const FrameBackground = () => {
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) return;
 
-    // Enable high-quality image smoothing for smoother frame transitions
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-
     const isMobile = window.innerWidth < 768;
     const folderName = isMobile ? 'final_mobile' : 'final';
+    const frameStep = isMobile ? 2 : 1;
+    const totalFrames = isMobile ? Math.ceil(217 / 2) : 217;
+    const priorityBatch = isMobile ? 15 : 30;
+    const limit = isMobile ? 25 : 50;
+
+    // Enable image smoothing based on device performance capability
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = isMobile ? 'low' : 'high';
 
     // Array to hold the preloaded Image objects
-    const images = new Array(TOTAL_FRAMES);
+    const images = new Array(totalFrames);
 
     // Store the current frame index
     const animState = { frame: 0 };
     let canvasReady = false;
     let lastRenderedFrame = -1;
+    let renderedFrame = 0;
 
     // Autoplay state
     let autoplayActive = false;
@@ -45,7 +48,7 @@ const FrameBackground = () => {
 
     // Helper to build frame URL
     const getFrameUrl = (index) => {
-      const frameNum = String(START_FRAME + index).padStart(3, '0');
+      const frameNum = String(START_FRAME + (index * frameStep)).padStart(3, '0');
       return `${import.meta.env.BASE_URL}${folderName}/ezgif-frame-${frameNum}.webp`;
     };
 
@@ -62,9 +65,9 @@ const FrameBackground = () => {
         ctx.drawImage(img, 0, 0);
 
         // Apply a smooth dark overlay near the end to transition to black
-        const fadeStartFrame = TOTAL_FRAMES - 20;
+        const fadeStartFrame = totalFrames - (isMobile ? 10 : 20);
         if (frameIndex >= fadeStartFrame) {
-          const fadeProgress = Math.min(1, (frameIndex - fadeStartFrame) / 20);
+          const fadeProgress = Math.min(1, (frameIndex - fadeStartFrame) / (isMobile ? 10 : 20));
           ctx.fillStyle = `rgba(0, 0, 0, ${fadeProgress * 0.7})`;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
@@ -77,7 +80,7 @@ const FrameBackground = () => {
 
       const scrollFrame = animState.frame;
 
-      if (autoplayActive && autoplayFrame < TOTAL_FRAMES - 1) {
+      if (autoplayActive && autoplayFrame < totalFrames - 1) {
         const delta = now - lastTime;
         if (delta >= frameInterval) {
           const framesToAdvance = Math.floor(delta / frameInterval);
@@ -86,13 +89,10 @@ const FrameBackground = () => {
         }
 
         // Clamp autoplayFrame to a window relative to the scroll position.
-        // This ensures the animation doesn't play to the end too early and is active at the bottom.
-        const LIMIT = 50; // Play up to 50 frames ahead of the current scroll position (~2 seconds of autoplay)
-
         if (autoplayFrame < scrollFrame) {
           autoplayFrame = scrollFrame;
-        } else if (autoplayFrame > scrollFrame + LIMIT) {
-          autoplayFrame = scrollFrame + LIMIT;
+        } else if (autoplayFrame > scrollFrame + limit) {
+          autoplayFrame = scrollFrame + limit;
         }
       } else {
         // If autoplay is not active (e.g. scrolling up or reset above trigger),
@@ -101,15 +101,25 @@ const FrameBackground = () => {
       }
 
       // Ensure autoplayFrame never exceeds the total frames count
-      if (autoplayFrame > TOTAL_FRAMES - 1) {
-        autoplayFrame = TOTAL_FRAMES - 1;
+      if (autoplayFrame > totalFrames - 1) {
+        autoplayFrame = totalFrames - 1;
       }
 
-      const targetFrame = Math.floor(autoplayFrame);
+      const targetFrame = autoplayFrame;
 
-      if (lastRenderedFrame !== targetFrame) {
-        lastRenderedFrame = targetFrame;
-        renderFrame(targetFrame);
+      // Smoothly ease the rendered frame towards the target frame (adds momentum / inertia)
+      const easeAmount = isMobile ? 0.12 : 0.2;
+      if (Math.abs(targetFrame - renderedFrame) < 0.05) {
+        renderedFrame = targetFrame;
+      } else {
+        renderedFrame = renderedFrame + (targetFrame - renderedFrame) * easeAmount;
+      }
+
+      const displayFrame = Math.floor(renderedFrame);
+
+      if (lastRenderedFrame !== displayFrame) {
+        lastRenderedFrame = displayFrame;
+        renderFrame(displayFrame);
       }
 
       requestAnimationFrame(tick);
@@ -129,7 +139,17 @@ const FrameBackground = () => {
         const img = new Image();
         img.decoding = 'async';
         img.src = getFrameUrl(index);
-        img.onload = () => resolve();
+        
+        // Force asynchronous image decoding in the background before drawing it
+        img.onload = () => {
+          if (typeof img.decode === 'function') {
+            img.decode()
+              .then(() => resolve())
+              .catch(() => resolve());
+          } else {
+            resolve();
+          }
+        };
         img.onerror = () => resolve(); // don't block on errors
         images[index] = img;
       });
@@ -151,14 +171,14 @@ const FrameBackground = () => {
     // Start loading: priority frames first, then the rest in background
     const startLoading = async () => {
       // Phase 1: Load the first batch with high priority (needed for initial scroll)
-      const priorityEnd = Math.min(PRIORITY_BATCH, TOTAL_FRAMES);
+      const priorityEnd = Math.min(priorityBatch, totalFrames);
       await loadFramesBatched(0, priorityEnd, priorityEnd);
 
       // Force render frame 0 as soon as priority batch is done
       lastRenderedFrame = -1;
 
       // Phase 2: Load the remaining frames in small batches in the background
-      await loadFramesBatched(priorityEnd, TOTAL_FRAMES, BATCH_SIZE);
+      await loadFramesBatched(priorityEnd, totalFrames, BATCH_SIZE);
     };
 
     startLoading();
@@ -198,7 +218,7 @@ const FrameBackground = () => {
     });
 
     tl.to(animState, {
-      frame: TOTAL_FRAMES - 1,
+      frame: totalFrames - 1,
       ease: 'none', // Linear frame progression for consistent scroll speed
       duration: 1
     });
