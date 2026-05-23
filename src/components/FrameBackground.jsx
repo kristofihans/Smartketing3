@@ -38,17 +38,6 @@ const FrameBackground = () => {
     const animState = { frame: 0 };
     let canvasReady = false;
     let lastRenderedFrame = -1;
-    let renderedFrame = 0;
-    let lastScrollFrame = 0;
-
-    // Autoplay state
-    let autoplayActive = false;
-    let autoplayFrame = 0;
-    let lastTime = performance.now();
-    let tickActive = true;
-    let tickRunning = false;
-    const fps = 48; // Faster autoplay catch-up speed (originally 24)
-    const frameInterval = 1000 / fps;
 
     // Helper to build frame URL
     const getFrameUrl = (index) => {
@@ -56,7 +45,7 @@ const FrameBackground = () => {
       return `${import.meta.env.BASE_URL}${folderName}/ezgif-frame-${frameNum}.${ext}`;
     };
 
-    // Function to render the current frame
+    // Function to render the current frame. Returns true if successfully drawn.
     const renderFrame = (frameIndex) => {
       const img = images[frameIndex];
       if (img && img.complete && img.naturalWidth !== 0) {
@@ -67,104 +56,10 @@ const FrameBackground = () => {
           canvasReady = true;
         }
         ctx.drawImage(img, 0, 0);
+        return true;
       }
+      return false;
     };
-
-    // Animation tick loop running at cinematic 24fps
-    const tick = (now) => {
-      if (!tickActive) return;
-
-      const scrollFrame = animState.frame;
-      const dScroll = scrollFrame - lastScrollFrame;
-      lastScrollFrame = scrollFrame;
-
-      if (dScroll < 0) {
-        // User is scrolling up: subtract the scroll delta from autoplayFrame
-        // so that the reverse animation is directly connected to the scroll distance
-        autoplayFrame = autoplayFrame + dScroll;
-        autoplayActive = false;
-      } else if (dScroll > 0) {
-        if (!autoplayActive) {
-          autoplayActive = true;
-          lastTime = now;
-        }
-      }
-
-      if (autoplayActive && autoplayFrame < totalFrames - 1) {
-        const delta = now - lastTime;
-        if (delta >= frameInterval) {
-          const framesToAdvance = Math.floor(delta / frameInterval);
-          autoplayFrame = autoplayFrame + framesToAdvance;
-          lastTime = now - (delta % frameInterval);
-        }
-
-        // Clamp autoplayFrame to a window relative to the scroll position.
-        if (autoplayFrame < scrollFrame) {
-          autoplayFrame = scrollFrame;
-        } else if (autoplayFrame > scrollFrame + limit) {
-          autoplayFrame = scrollFrame + limit;
-        }
-      } else {
-        // Smoothly ease autoplayFrame down to scrollFrame when scrolling up or stopped
-        const reverseEase = isMobile ? 0.15 : 0.12;
-        autoplayFrame = autoplayFrame + (scrollFrame - autoplayFrame) * reverseEase;
-
-        // Ensure it doesn't fall below the current scroll frame
-        if (autoplayFrame < scrollFrame) {
-          autoplayFrame = scrollFrame;
-        }
-      }
-
-      // Ensure autoplayFrame never exceeds the total frames count
-      if (autoplayFrame > totalFrames - 1) {
-        autoplayFrame = totalFrames - 1;
-      }
-
-      const targetFrame = autoplayFrame;
-
-      // Smoothly ease the rendered frame towards the target frame (adds momentum / inertia)
-      const easeAmount = 0.08;
-      if (Math.abs(targetFrame - renderedFrame) < 0.05) {
-        renderedFrame = targetFrame;
-      } else {
-        renderedFrame = renderedFrame + (targetFrame - renderedFrame) * easeAmount;
-      }
-
-      const displayFrame = Math.max(0, Math.min(totalFrames - 1, Math.round(renderedFrame)));
-
-      if (lastRenderedFrame !== displayFrame) {
-        lastRenderedFrame = displayFrame;
-        renderFrame(displayFrame);
-
-
-      }
-
-      // Pause tick loop when idle to save CPU and GPU cycles
-      const isLimitReached = autoplayFrame >= totalFrames - 1 || (autoplayActive && autoplayFrame >= scrollFrame + limit);
-      const isIdle = Math.abs(targetFrame - renderedFrame) < 0.05 && dScroll === 0 && (!autoplayActive || isLimitReached);
-
-      if (isIdle) {
-        tickRunning = false;
-      } else {
-        requestAnimationFrame(tick);
-      }
-    };
-
-    // Safely start or wake the tick loop
-    const wakeTick = () => {
-      if (!tickRunning && tickActive) {
-        tickRunning = true;
-        requestAnimationFrame((now) => {
-          lastTime = now;
-          tick(now);
-        });
-      }
-    };
-
-    // Start the tick loop initially
-    wakeTick();
-
-    // --- Prioritized frame loading ---
 
     // Load a single frame and return a promise
     const loadFrame = (index) => {
@@ -173,20 +68,29 @@ const FrameBackground = () => {
         img.decoding = 'async';
         img.src = getFrameUrl(index);
         
+        const tryRender = () => {
+          const currentFrame = Math.max(0, Math.min(totalFrames - 1, Math.round(animState.frame)));
+          if (currentFrame === index && lastRenderedFrame !== index) {
+            if (renderFrame(index)) {
+              lastRenderedFrame = index;
+            }
+          }
+        };
+
         // Force asynchronous image decoding in the background before drawing it
         img.onload = () => {
           if (typeof img.decode === 'function') {
             img.decode()
               .then(() => {
-                wakeTick();
+                tryRender();
                 resolve();
               })
               .catch(() => {
-                wakeTick();
+                tryRender();
                 resolve();
               });
           } else {
-            wakeTick();
+            tryRender();
             resolve();
           }
         };
@@ -217,13 +121,15 @@ const FrameBackground = () => {
       const priorityEnd = Math.min(priorityBatch, totalFrames);
       await loadFramesBatched(0, priorityEnd, priorityEnd);
 
-      // Force render frame 0 as soon as priority batch is done
+      // Force render active frame as soon as priority batch is done
       lastRenderedFrame = -1;
-      wakeTick();
+      const currentFrame = Math.max(0, Math.min(totalFrames - 1, Math.round(animState.frame)));
+      if (renderFrame(currentFrame)) {
+        lastRenderedFrame = currentFrame;
+      }
 
       // Phase 2: Load the remaining frames in small batches in the background
       await loadFramesBatched(priorityEnd, totalFrames, BATCH_SIZE);
-      wakeTick();
     };
 
     startLoading();
@@ -251,31 +157,13 @@ const FrameBackground = () => {
         start: () => window.innerWidth < 768 ? 'top 20%' : 'top 80%', // Start later on mobile, early on desktop
         end: 'bottom bottom', // Run animation all the way to the bottom of the page
         scrub: isMobile ? 1.5 : 2.0, // Softened catch-up lag on scroll for fluid tracking
-        onEnter: () => {
-          autoplayActive = true;
-          lastTime = performance.now();
-          wakeTick();
-        },
-        onLeaveBack: () => {
-          // Reset when scrolling back above the trigger (to the Hero)
-          autoplayActive = false;
-          autoplayFrame = 0;
-          animState.frame = 0;
-          lastScrollFrame = 0;
-          wakeTick();
-        },
-        onUpdate: (self) => {
-          if (self.direction === 1) {
-            // Scrolling down: make sure autoplay is active
-            if (!autoplayActive) {
-              autoplayActive = true;
-              lastTime = performance.now();
+        onUpdate: () => {
+          const currentFrame = Math.max(0, Math.min(totalFrames - 1, Math.round(animState.frame)));
+          if (lastRenderedFrame !== currentFrame) {
+            if (renderFrame(currentFrame)) {
+              lastRenderedFrame = currentFrame;
             }
-          } else if (self.direction === -1) {
-            // Scrolling up: disable autoplay so it doesn't drift forward when stopped
-            autoplayActive = false;
           }
-          wakeTick();
         }
       }
     });
@@ -343,8 +231,6 @@ const FrameBackground = () => {
         if (tween.scrollTrigger) tween.scrollTrigger.kill();
         tween.kill();
       });
-      tickActive = false; // Stop the animation loop
-
 
       // Release image references immediately to free up GPU and system memory
       for (let i = 0; i < images.length; i++) {
