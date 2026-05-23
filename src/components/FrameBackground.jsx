@@ -231,6 +231,20 @@ const FrameBackground = () => {
     // Set up a GSAP ScrollTrigger timeline to scrub the frames with easing
     const scrollTarget = document.querySelector('.app__content');
 
+    let opacityTween;
+    if (isMobile) {
+      opacityTween = gsap.to(canvas, {
+        scrollTrigger: {
+          trigger: scrollTarget || document.documentElement,
+          start: 'top 35%', // Start fading in as the user begins scrolling down
+          end: 'top 10%',   // Fully visible once scrolled past the top portion
+          scrub: 1,
+        },
+        opacity: 1,
+        ease: 'power1.out'
+      });
+    }
+
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: scrollTarget || document.documentElement,
@@ -277,6 +291,10 @@ const FrameBackground = () => {
     // Cleanup
     return () => {
       tl.kill();
+      if (opacityTween) {
+        if (opacityTween.scrollTrigger) opacityTween.scrollTrigger.kill();
+        opacityTween.kill();
+      }
       tickActive = false; // Stop the animation loop
 
 

@@ -15,9 +15,16 @@
   object-fit: cover;
   opacity: 1;
   background-color: #050505;
+  filter: brightness(0.35); /* Make the frame-by-frame animation darker */
 
   /* GPU acceleration for smoother rendering */
   will-change: transform;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
+}
+
+@media (max-width: 768px) {
+  .frame-background {
+    opacity: 0; /* Hidden by default on mobile load, will fade in on scroll */
+  }
 }
