@@ -19,11 +19,11 @@ const FrameBackground = () => {
     if (!ctx) return;
 
     const isMobile = window.innerWidth < 768;
-    const folderName = isMobile ? 'LastFramesmobile' : 'LastFrames';
-    const ext = 'webp';
+    const folderName = isMobile ? 'Donemobile' : 'Donedesktop';
+    const ext = 'jpg';
     const frameStep = 1;
-    const startFrame = isMobile ? 16 : 1;
-    const totalFrames = isMobile ? 177 : 192;
+    const startFrame = 1;
+    const totalFrames = 240;
     const priorityBatch = 30;
     const limit = isMobile ? 30 : 50;
 
@@ -60,63 +60,13 @@ const FrameBackground = () => {
     const renderFrame = (frameIndex) => {
       const img = images[frameIndex];
       if (img && img.complete && img.naturalWidth !== 0) {
-        // Set canvas dimensions once to match viewport (mobile) or image (desktop)
+        // Set canvas dimensions once to match image dimensions
         if (!canvasReady) {
-          if (isMobile) {
-            const dpr = 1; // Cap to 1.0 on mobile to bypass high-DPI scaling overhead
-            canvas.width = window.innerWidth * dpr;
-            canvas.height = window.innerHeight * dpr;
-          } else {
-            canvas.width = img.width;
-            canvas.height = img.height;
-          }
+          canvas.width = img.width;
+          canvas.height = img.height;
           canvasReady = true;
         }
-
-        if (isMobile) {
-          // Draw image to cover the canvas (equivalent to object-fit: cover)
-          const imgRatio = img.width / img.height;
-          const canvasRatio = canvas.width / canvas.height;
-          let drawWidth, drawHeight, offsetX, offsetY;
-
-          if (imgRatio > canvasRatio) {
-            drawHeight = canvas.height;
-            drawWidth = canvas.height * imgRatio;
-            offsetX = (canvas.width - drawWidth) / 2;
-            offsetY = 0;
-          } else {
-            drawWidth = canvas.width;
-            drawHeight = canvas.width / imgRatio;
-            offsetX = 0;
-            offsetY = (canvas.height - drawHeight) / 2;
-          }
-          ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
-        } else {
-          ctx.drawImage(img, 0, 0);
-        }
-
-        // Apply a smooth dark overlay near the end to transition to black
-        const fadeStartFrame = totalFrames - 20;
-        if (frameIndex >= fadeStartFrame) {
-          const fadeProgress = Math.min(1, (frameIndex - fadeStartFrame) / 20);
-          ctx.fillStyle = `rgba(0, 0, 0, ${fadeProgress * 0.7})`;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-      }
-    };
-
-    // Pre-decode a window of frames in the direction of travel to prevent texture eviction lag
-    const preDecodeWindow = (currentIndex, direction) => {
-      const windowSize = isMobile ? 12 : 15;
-      
-      for (let i = 1; i <= windowSize; i++) {
-        const targetIdx = currentIndex + direction * i;
-        if (targetIdx >= 0 && targetIdx < totalFrames) {
-          const img = images[targetIdx];
-          if (img && img.complete && typeof img.decode === 'function') {
-            img.decode().catch(() => {});
-          }
-        }
+        ctx.drawImage(img, 0, 0);
       }
     };
 
@@ -173,33 +123,25 @@ const FrameBackground = () => {
       const targetFrame = autoplayFrame;
 
       // Smoothly ease the rendered frame towards the target frame (adds momentum / inertia)
-      const easeAmount = isMobile ? 0.16 : 0.2;
+      const easeAmount = 0.08;
       if (Math.abs(targetFrame - renderedFrame) < 0.05) {
         renderedFrame = targetFrame;
       } else {
         renderedFrame = renderedFrame + (targetFrame - renderedFrame) * easeAmount;
       }
 
-      const displayFrame = Math.floor(renderedFrame);
+      const displayFrame = Math.max(0, Math.min(totalFrames - 1, Math.round(renderedFrame)));
 
       if (lastRenderedFrame !== displayFrame) {
         lastRenderedFrame = displayFrame;
         renderFrame(displayFrame);
 
-        // Trigger look-ahead decoding in the current scroll direction
-        let direction = 1;
-        if (dScroll < 0) {
-          direction = -1;
-        } else if (dScroll > 0) {
-          direction = 1;
-        } else {
-          direction = autoplayActive ? 1 : -1;
-        }
-        preDecodeWindow(displayFrame, direction);
+
       }
 
       // Pause tick loop when idle to save CPU and GPU cycles
-      const isIdle = Math.abs(targetFrame - renderedFrame) < 0.05 && !autoplayActive && dScroll === 0;
+      const isLimitReached = autoplayFrame >= totalFrames - 1 || (autoplayActive && autoplayFrame >= scrollFrame + limit);
+      const isIdle = Math.abs(targetFrame - renderedFrame) < 0.05 && dScroll === 0 && (!autoplayActive || isLimitReached);
 
       if (isIdle) {
         tickRunning = false;
@@ -235,9 +177,16 @@ const FrameBackground = () => {
         img.onload = () => {
           if (typeof img.decode === 'function') {
             img.decode()
-              .then(() => resolve())
-              .catch(() => resolve());
+              .then(() => {
+                wakeTick();
+                resolve();
+              })
+              .catch(() => {
+                wakeTick();
+                resolve();
+              });
           } else {
+            wakeTick();
             resolve();
           }
         };
@@ -255,7 +204,10 @@ const FrameBackground = () => {
             batch.push(loadFrame(j));
           }
         }
-        await Promise.all(batch);
+        // Fire batch requests concurrently without awaiting to prevent slow requests from blocking the queue
+        Promise.all(batch);
+        // Small stagger delay before starting next batch
+        await new Promise((resolve) => setTimeout(resolve, 60));
       }
     };
 
@@ -284,7 +236,7 @@ const FrameBackground = () => {
         trigger: scrollTarget || document.documentElement,
         start: () => window.innerWidth < 768 ? 'top 20%' : 'top 80%', // Start later on mobile, early on desktop
         end: 'bottom bottom', // Run animation all the way to the bottom of the page
-        scrub: isMobile ? 1.0 : 1.5, // Tighter catch up on mobile for responsive tracking
+        scrub: isMobile ? 1.5 : 2.0, // Softened catch-up lag on scroll for fluid tracking
         onEnter: () => {
           autoplayActive = true;
           lastTime = performance.now();
@@ -320,32 +272,13 @@ const FrameBackground = () => {
       duration: 1
     });
 
-    // Handle ResizeObserver for dynamic heights (debounced)
-    let resizeObserver;
-    let resizeTimeout;
-    if (scrollTarget && window.ResizeObserver) {
-      resizeObserver = new ResizeObserver(() => {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(() => ScrollTrigger.refresh(), 200);
-      });
-      resizeObserver.observe(scrollTarget);
-    }
 
-    const handleResize = () => {
-      canvasReady = false;
-      wakeTick();
-    };
-    window.addEventListener('resize', handleResize);
 
     // Cleanup
     return () => {
       tl.kill();
       tickActive = false; // Stop the animation loop
-      clearTimeout(resizeTimeout);
-      if (resizeObserver && scrollTarget) {
-        resizeObserver.unobserve(scrollTarget);
-      }
-      window.removeEventListener('resize', handleResize);
+
 
       // Release image references immediately to free up GPU and system memory
       for (let i = 0; i < images.length; i++) {
