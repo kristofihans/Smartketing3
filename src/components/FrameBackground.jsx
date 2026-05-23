@@ -47,7 +47,7 @@ const FrameBackground = () => {
     let lastTime = performance.now();
     let tickActive = true;
     let tickRunning = false;
-    const fps = 24; // cinematic playback speed
+    const fps = 48; // Faster autoplay catch-up speed (originally 24)
     const frameInterval = 1000 / fps;
 
     // Helper to build frame URL
