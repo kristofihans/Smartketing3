@@ -11,10 +11,10 @@ const VideoPortfolio = () => {
       <div className="section-container">
         <motion.div 
           className="section-header"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, filter: 'blur(8px)' }}
+          whileInView={{ opacity: 1, filter: 'blur(0px)' }}
           viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8, delay: 0.2 }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
         >
           <h2 className="section-title">Visual Stories</h2>
         </motion.div>
@@ -23,10 +23,10 @@ const VideoPortfolio = () => {
         <motion.div 
           className="feature-media feature-media--portrait"
           style={{ cursor: 'pointer' }}
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 1, delay: 0.4 }}
+          transition={{ duration: 1.4, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
         >
           <VideoCard 
             src={`${import.meta.env.BASE_URL}video.mp4`} 

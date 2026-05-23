@@ -286,7 +286,50 @@ const FrameBackground = () => {
       duration: 1
     });
 
+    // --- Dynamic 3D Parallax Layering (Option 2 & 4) ---
+    const parallaxTweens = [];
+    const sections = gsap.utils.toArray('.portfolio-section, .services, .outro');
 
+    sections.forEach((section) => {
+      // 1. Parallax for Section Headers
+      const header = section.querySelector('.section-header, .services__header');
+      if (header) {
+        const tween = gsap.fromTo(header, 
+          { y: 40 },
+          {
+            y: -40,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: 1.2
+            }
+          }
+        );
+        parallaxTweens.push(tween);
+      }
+
+      // 2. Parallax and Scale for Media Visual elements
+      const media = section.querySelector('.feature-media, .services__grid, .contact__container');
+      if (media) {
+        const tween = gsap.fromTo(media,
+          { y: 80, scale: 0.96 },
+          {
+            y: -80,
+            scale: 1.02,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: 1.5
+            }
+          }
+        );
+        parallaxTweens.push(tween);
+      }
+    });
 
     // Cleanup
     return () => {
@@ -295,6 +338,11 @@ const FrameBackground = () => {
         if (opacityTween.scrollTrigger) opacityTween.scrollTrigger.kill();
         opacityTween.kill();
       }
+      // Clean up parallax tweens
+      parallaxTweens.forEach((tween) => {
+        if (tween.scrollTrigger) tween.scrollTrigger.kill();
+        tween.kill();
+      });
       tickActive = false; // Stop the animation loop
 
 

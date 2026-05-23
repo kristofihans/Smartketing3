@@ -59,11 +59,19 @@ const Services = () => {
             <motion.div 
               key={s.id} 
               className={`bento-card ${s.size}`}
-              whileHover={{ y: -5 }}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1, duration: 0.8 }}
+              whileHover={{ 
+                y: -6, 
+                borderColor: 'rgba(239, 68, 68, 0.65)',
+                boxShadow: '0 0 35px rgba(220, 38, 38, 0.3)'
+              }}
+              initial={{ opacity: 0, filter: 'blur(4px)' }}
+              whileInView={{ opacity: 1, filter: 'blur(0px)' }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ 
+                delay: index * 0.08, 
+                duration: 1, 
+                ease: [0.16, 1, 0.3, 1] 
+              }}
             >
               <h3 className="bento-card__title">{s.title}</h3>
               <p className="bento-card__desc">{s.desc}</p>

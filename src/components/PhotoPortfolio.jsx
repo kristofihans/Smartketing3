@@ -10,9 +10,10 @@ const PhotoPortfolio = () => {
       <div className="section-container">
         <motion.div 
           className="section-header"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          initial={{ opacity: 0, filter: 'blur(4px)' }}
+          whileInView={{ opacity: 1, filter: 'blur(0px)' }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 1.2 }}
         >
           <h2 className="section-title">Branding & Product</h2>
         </motion.div>
@@ -21,10 +22,10 @@ const PhotoPortfolio = () => {
         <motion.div 
           className="feature-media feature-media--portrait"
           style={{ cursor: 'pointer' }}
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
           onClick={() => navigate('/gallery?tab=foto')}
         >
           <img src={`${import.meta.env.BASE_URL}productimage1.webp`} alt="Photography Hero" loading="lazy" />
