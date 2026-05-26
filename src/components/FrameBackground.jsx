@@ -25,7 +25,6 @@ const FrameBackground = () => {
     const startFrame = 1;
     const totalFrames = 240;
     const priorityBatch = 30;
-    const limit = isMobile ? 30 : 50;
 
     // Enable/disable image smoothing based on device performance capability
     ctx.imageSmoothingEnabled = !isMobile;
@@ -151,27 +150,42 @@ const FrameBackground = () => {
       });
     }
 
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: scrollTarget || document.documentElement,
-        start: () => window.innerWidth < 768 ? 'top 20%' : 'top 80%', // Start later on mobile, early on desktop
-        end: 'bottom bottom', // Run animation all the way to the bottom of the page
-        scrub: isMobile ? 1.5 : 2.0, // Softened catch-up lag on scroll for fluid tracking
-        onUpdate: () => {
-          const currentFrame = Math.max(0, Math.min(totalFrames - 1, Math.round(animState.frame)));
-          if (lastRenderedFrame !== currentFrame) {
-            if (renderFrame(currentFrame)) {
-              lastRenderedFrame = currentFrame;
+    const triggerInstance = ScrollTrigger.create({
+      trigger: scrollTarget || document.documentElement,
+      start: () => window.innerWidth < 768 ? 'top 20%' : 'top 80%', // Start later on mobile, early on desktop
+      end: 'bottom bottom', // Run animation all the way to the bottom of the page
+      onUpdate: (self) => {
+        const scrollFrame = self.progress * (totalFrames - 1);
+        const dir = self.direction; // 1 = forward, -1 = backward
+        
+        let targetFrame = animState.frame;
+        if (self.progress === 0) {
+          targetFrame = 0;
+        } else if (dir === 1) {
+          targetFrame = Math.max(targetFrame, animState.frame + 12); // Autoplay 12 frames forward
+          targetFrame = Math.max(targetFrame, scrollFrame);
+        } else if (dir === -1) {
+          targetFrame = Math.min(targetFrame, animState.frame - 12); // Autoplay 12 frames backward
+          targetFrame = Math.min(targetFrame, scrollFrame);
+        }
+        
+        targetFrame = Math.max(0, Math.min(totalFrames - 1, targetFrame));
+        
+        gsap.to(animState, {
+          frame: targetFrame,
+          duration: 0.5, // Smooth 24 fps playback (12 frames over 0.5s)
+          ease: 'power1.out',
+          overwrite: 'auto',
+          onUpdate: () => {
+            const currentFrame = Math.max(0, Math.min(totalFrames - 1, Math.round(animState.frame)));
+            if (lastRenderedFrame !== currentFrame) {
+              if (renderFrame(currentFrame)) {
+                lastRenderedFrame = currentFrame;
+              }
             }
           }
-        }
+        });
       }
-    });
-
-    tl.to(animState, {
-      frame: totalFrames - 1,
-      ease: 'none', // Linear frame progression for consistent scroll speed
-      duration: 1
     });
 
     // --- Dynamic 3D Parallax Layering (Option 2 & 4) ---
@@ -221,7 +235,7 @@ const FrameBackground = () => {
 
     // Cleanup
     return () => {
-      tl.kill();
+      triggerInstance.kill();
       if (opacityTween) {
         if (opacityTween.scrollTrigger) opacityTween.scrollTrigger.kill();
         opacityTween.kill();
