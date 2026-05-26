@@ -20,7 +20,7 @@ const FrameBackground = () => {
 
     const isMobile = window.innerWidth < 768;
     const folderName = isMobile ? 'Donemobile' : 'Donedesktop';
-    const ext = 'jpg';
+    const ext = 'webp';
     const frameStep = 1;
     const startFrame = 1;
     const totalFrames = 240;
