@@ -5,8 +5,6 @@ import './FrameBackground.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const BATCH_SIZE = 15;
-
 const FrameBackground = () => {
   const canvasRef = useRef(null);
 
@@ -20,177 +18,61 @@ const FrameBackground = () => {
     const isMobile = window.innerWidth < 768;
     const folderName = isMobile ? 'Donemobile' : 'Donedesktop';
     const ext = 'webp';
-    const frameStep = 1;
-    const startFrame = 1;
     const totalFrames = 240;
-    const priorityBatch = 40;
-
-    // Enable/disable image smoothing based on device
-    ctx.imageSmoothingEnabled = !isMobile;
-    ctx.imageSmoothingQuality = isMobile ? 'low' : 'high';
 
     const images = new Array(totalFrames);
-    const decoded = new Array(totalFrames).fill(false);
-
     const animState = { frame: 0 };
     let canvasReady = false;
-    let lastRenderedFrame = -1;
-    let renderScheduled = false;
     let isDestroyed = false;
 
     const getFrameUrl = (index) => {
-      const frameNum = String(startFrame + (index * frameStep)).padStart(3, '0');
+      const frameNum = String(1 + index).padStart(3, '0');
       return `${import.meta.env.BASE_URL}${folderName}/ezgif-frame-${frameNum}.${ext}`;
-    };
-
-    const isFrameReady = (index) => {
-      const img = images[index];
-      return img && img.complete && img.naturalWidth !== 0 && decoded[index];
-    };
-
-    // Find nearest loaded frame as fallback
-    const findNearestLoadedFrame = (targetIndex) => {
-      for (let offset = 0; offset < totalFrames; offset++) {
-        if (targetIndex - offset >= 0 && isFrameReady(targetIndex - offset)) {
-          return targetIndex - offset;
-        }
-        if (targetIndex + offset < totalFrames && isFrameReady(targetIndex + offset)) {
-          return targetIndex + offset;
-        }
-      }
-      return -1;
     };
 
     // Render a single frame to canvas
     const drawFrame = (frameIndex) => {
       const img = images[frameIndex];
-      if (!canvasReady) {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        canvasReady = true;
-      }
-      ctx.drawImage(img, 0, 0);
-      lastRenderedFrame = frameIndex;
-    };
-
-    // Schedule a render on the next animation frame (coalesces multiple scroll events)
-    const scheduleRender = () => {
-      if (renderScheduled || isDestroyed) return;
-      renderScheduled = true;
-
-      requestAnimationFrame(() => {
-        renderScheduled = false;
-        if (isDestroyed) return;
-
-        const currentFrame = Math.max(0, Math.min(totalFrames - 1, Math.round(animState.frame)));
-
-        // Skip if same frame already drawn
-        if (currentFrame === lastRenderedFrame) return;
-
-        if (isFrameReady(currentFrame)) {
-          drawFrame(currentFrame);
-        } else {
-          // Fallback to nearest available frame
-          const nearest = findNearestLoadedFrame(currentFrame);
-          if (nearest >= 0 && nearest !== lastRenderedFrame) {
-            drawFrame(nearest);
-          }
+      if (img && img.complete && img.naturalWidth !== 0) {
+        if (!canvasReady) {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          canvasReady = true;
         }
-      });
-    };
-
-    // Load a single frame and return a promise
-    const loadFrame = (index) => {
-      return new Promise((resolve) => {
-        if (images[index] && decoded[index]) {
-          resolve();
-          return;
-        }
-        const img = new Image();
-        img.decoding = 'async';
-        img.src = getFrameUrl(index);
-        images[index] = img;
-
-        img.onload = () => {
-          if (typeof img.decode === 'function') {
-            img.decode()
-              .then(() => { decoded[index] = true; resolve(); })
-              .catch(() => { decoded[index] = true; resolve(); });
-          } else {
-            decoded[index] = true;
-            resolve();
-          }
-        };
-        img.onerror = () => {
-          decoded[index] = false;
-          resolve();
-        };
-      });
-    };
-
-    // Load frames in sequential batches
-    const loadFramesBatched = async (startIdx, endIdx, batchSize) => {
-      for (let i = startIdx; i < endIdx; i += batchSize) {
-        const batch = [];
-        for (let j = i; j < Math.min(i + batchSize, endIdx); j++) {
-          if (!images[j]) {
-            batch.push(loadFrame(j));
-          }
-        }
-        await Promise.all(batch);
-        await new Promise((resolve) => setTimeout(resolve, 10));
+        ctx.drawImage(img, 0, 0);
       }
     };
 
-    const startLoading = async () => {
-      const priorityEnd = Math.min(priorityBatch, totalFrames);
-      await loadFramesBatched(0, priorityEnd, priorityEnd);
-
-      // Render frame 0 as soon as priority batch is loaded
-      if (!isDestroyed && isFrameReady(0) && lastRenderedFrame === -1) {
-        drawFrame(0);
-      }
-
-      if (!isDestroyed) {
-        await loadFramesBatched(priorityEnd, totalFrames, BATCH_SIZE);
-      }
-    };
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          startLoading();
-          observer.disconnect();
+    // Preload all images simply
+    for (let i = 0; i < totalFrames; i++) {
+      const img = new Image();
+      img.src = getFrameUrl(i);
+      img.onload = () => {
+        if (i === 0 && animState.frame === 0) {
+          drawFrame(0);
         }
-      },
-      { rootMargin: '200px' }
-    );
-    observer.observe(canvas);
-
-    // GSAP ScrollTrigger — scrub: true = direct 1:1 scroll mapping, no autoplay catch-up
-    const scrollTarget = document.querySelector('.app__content');
-
-    let opacityTween;
-    if (isMobile) {
-      opacityTween = gsap.to(canvas, {
-        scrollTrigger: {
-          trigger: scrollTarget || document.documentElement,
-          start: 'top 35%',
-          end: 'top 10%',
-          scrub: true,
-        },
-        opacity: 1,
-        ease: 'power1.out'
-      });
+      };
+      images[i] = img;
     }
+
+    const scrollTarget = document.querySelector('.app__content');
+    let scrollTargetFrame = 0;
+    let targetFrame = 0;
+    let currentFrame = 0;
+    let lastScrollTargetFrame = 0;
+    const baseCatchupSpeed = 2.0; // Max frames to advance/reverse per render tick
+    const baseIdleSpeed = 0.35;    // Base autoplay speed when user is stationary
 
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: scrollTarget || document.documentElement,
         start: () => window.innerWidth < 768 ? 'top 20%' : 'top 80%',
         end: 'bottom bottom',
-        scrub: true, // Direct 1:1 — no autoplay, stops instantly when scrolling stops
-        onUpdate: scheduleRender,
+        scrub: true,
+        onUpdate: (self) => {
+          // Sync target frame to scroll progress
+          scrollTargetFrame = self.progress * (totalFrames - 1);
+        }
       }
     });
 
@@ -200,67 +82,59 @@ const FrameBackground = () => {
       duration: 1
     });
 
-    // --- Dynamic 3D Parallax Layering ---
-    const parallaxTweens = [];
-    const sections = gsap.utils.toArray('.portfolio-section, .services, .outro');
+    // Custom animation tick loop for constant-speed bidirectional catchup + idle autoplay + acceleration
+    let animationFrameId;
+    const tick = () => {
+      if (isDestroyed) return;
 
-    sections.forEach((section) => {
-      const header = section.querySelector('.section-header, .services__header');
-      if (header) {
-        const tween = gsap.fromTo(header, 
-          { y: 40 },
-          {
-            y: -40,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: section,
-              start: 'top bottom',
-              end: 'bottom top',
-              scrub: 1.2
-            }
-          }
-        );
-        parallaxTweens.push(tween);
+      // Calculate speed multiplier that scales up as the animation nears the end
+      // Starts accelerating after 60% of the animation (frame 144)
+      const accelerationStartFrame = totalFrames * 0.6;
+      let speedMultiplier = 1.0;
+      if (currentFrame > accelerationStartFrame) {
+        const ratio = (currentFrame - accelerationStartFrame) / (totalFrames - 1 - accelerationStartFrame);
+        speedMultiplier = 1.0 + ratio * 1.5; // Scales from 1.0 up to 2.5 at the end
       }
 
-      const media = section.querySelector('.feature-media, .services__grid, .contact__container');
-      if (media) {
-        const tween = gsap.fromTo(media,
-          { y: 80, scale: 0.96 },
-          {
-            y: -80,
-            scale: 1.02,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: section,
-              start: 'top bottom',
-              end: 'bottom top',
-              scrub: 1.5
-            }
-          }
-        );
-        parallaxTweens.push(tween);
+      const activeCatchupSpeed = baseCatchupSpeed * speedMultiplier;
+      const activeIdleSpeed = baseIdleSpeed * speedMultiplier;
+
+      // Check if user is actively scrolling
+      const didScroll = scrollTargetFrame !== lastScrollTargetFrame;
+      lastScrollTargetFrame = scrollTargetFrame;
+
+      if (didScroll) {
+        targetFrame = scrollTargetFrame;
+      } else {
+        // Idle autoplay forward
+        if (targetFrame < totalFrames - 1) {
+          targetFrame = Math.min(totalFrames - 1, targetFrame + activeIdleSpeed);
+        }
       }
-    });
+
+      // Smooth catchup (works both forward and backward)
+      if (Math.abs(currentFrame - targetFrame) > 0.05) {
+        const diff = targetFrame - currentFrame;
+        const step = Math.sign(diff) * Math.min(activeCatchupSpeed, Math.abs(diff));
+        currentFrame += step;
+      } else {
+        currentFrame = targetFrame;
+      }
+
+      drawFrame(Math.round(currentFrame));
+
+      animationFrameId = requestAnimationFrame(tick);
+    };
+    animationFrameId = requestAnimationFrame(tick);
 
     // Cleanup
     return () => {
       isDestroyed = true;
-      observer.disconnect();
+      cancelAnimationFrame(animationFrameId);
       tl.kill();
-      if (opacityTween) {
-        if (opacityTween.scrollTrigger) opacityTween.scrollTrigger.kill();
-        opacityTween.kill();
-      }
-      parallaxTweens.forEach((tween) => {
-        if (tween.scrollTrigger) tween.scrollTrigger.kill();
-        tween.kill();
-      });
-
       for (let i = 0; i < images.length; i++) {
         if (images[i]) {
           images[i].onload = null;
-          images[i].onerror = null;
           images[i].src = '';
           images[i] = null;
         }
@@ -272,4 +146,3 @@ const FrameBackground = () => {
 };
 
 export default FrameBackground;
-

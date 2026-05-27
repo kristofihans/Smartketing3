@@ -9,7 +9,7 @@ const Gallery = lazy(() => import('./pages/Gallery'));
 
 function App() {
   return (
-    <Router basename="/Smartketing2">
+    <Router basename="/Smartketing3">
       <div className="app">
         <Navbar />
         <Suspense fallback={

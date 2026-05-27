@@ -8,7 +8,7 @@ import PhotoPortfolio from '../components/PhotoPortfolio';
 import WebPortfolio from '../components/WebPortfolio';
 import Outro from '../components/Outro';
 import Footer from '../components/Footer';
-import FrameBackground from '../components/FrameBackground';
+import VideoBackground from '../components/VideoBackground';
 
 const Home = () => {
   const location = useLocation();
@@ -32,7 +32,7 @@ const Home = () => {
     <div>
       <Hero />
       <div className="app__content">
-        <FrameBackground />
+        <VideoBackground />
         <div className="portfolio-wrapper">
           <VideoPortfolio />
           <PhotoPortfolio />

@@ -23,8 +23,3 @@
   -webkit-transform: translateZ(0);
 }
 
-@media (max-width: 768px) {
-  .frame-background {
-    opacity: 0; /* Hidden by default on mobile load, will fade in on scroll */
-  }
-}

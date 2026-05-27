@@ -23,8 +23,8 @@
     Cache-Control = "public, max-age=604800, stale-while-revalidate=86400"
 
 [[redirects]]
-  from = "/Smartketing2/*"
-  to = "/Smartketing2/index.html"
+  from = "/Smartketing3/*"
+  to = "/Smartketing3/index.html"
   status = 200
 
 [[headers]]
@@ -33,7 +33,7 @@
     Cache-Control = "public, max-age=2592000, stale-while-revalidate=86400"
 
 [[headers]]
-  for = "/Smartketing2/*.mp4"
+  for = "/Smartketing3/*.mp4"
   [headers.values]
     Cache-Control = "public, max-age=2592000, stale-while-revalidate=86400"
 
@@ -43,6 +43,6 @@
     Cache-Control = "public, max-age=2592000, stale-while-revalidate=86400"
 
 [[headers]]
-  for = "/Smartketing2/*.webp"
+  for = "/Smartketing3/*.webp"
   [headers.values]
     Cache-Control = "public, max-age=2592000, stale-while-revalidate=86400"

@@ -1,0 +1,24 @@
+/* ========================================
+   VIDEO BACKGROUND — Sticky background video
+   ======================================== */
+
+.video-background {
+  grid-area: 1 / 1;
+  display: block;
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  object-fit: cover;
+  opacity: 1;
+  background-color: #050505;
+  filter: brightness(0.3); /* Ensure high contrast for white overlay text */
+
+  /* GPU acceleration */
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
