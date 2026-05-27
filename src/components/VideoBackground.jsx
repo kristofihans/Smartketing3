@@ -8,6 +8,10 @@ gsap.registerPlugin(ScrollTrigger);
 const VideoBackground = () => {
   const videoRef = useRef(null);
 
+  // Detect screen size on load
+  const isMobile = window.innerWidth < 768;
+  const videoSrc = `${import.meta.env.BASE_URL}${isMobile ? 'videoafterheromobile.mp4' : 'videoafterhero.mp4'}`;
+
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -59,13 +63,12 @@ const VideoBackground = () => {
   return (
     <video
       ref={videoRef}
+      src={videoSrc}
       muted
       playsInline
       preload="auto"
       className="video-background"
-    >
-      <source src={`${import.meta.env.BASE_URL}videoafterhero.mp4`} type="video/mp4" />
-    </video>
+    />
   );
 };
 
