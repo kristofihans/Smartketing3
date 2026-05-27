@@ -70,8 +70,8 @@ const VideoBackground = () => {
       const opacityTween = gsap.to(canvas, {
         scrollTrigger: {
           trigger: scrollTarget || document.documentElement,
-          start: 'top 35%',
-          end: 'top 10%',
+          start: 'top 90%',
+          end: 'top 30%',
           scrub: true,
         },
         opacity: 1,
