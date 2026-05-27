@@ -71,11 +71,11 @@ const VideoBackground = () => {
         scrollTrigger: {
           trigger: scrollTarget || document.documentElement,
           start: 'top 90%',
-          end: 'top 30%',
+          end: 'top -55%',
           scrub: 1.5,
         },
         opacity: 1,
-        ease: 'none'
+        ease: 'power1.inOut'
       });
 
       const tl = gsap.timeline({
