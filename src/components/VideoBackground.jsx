@@ -31,6 +31,7 @@ const VideoBackground = () => {
       const animState = { frame: 0 };
       let canvasReady = false;
       let isDestroyed = false;
+      let hasScrolledCanvas = false; // Block rendering/updating until user scrolls
 
       const getFrameUrl = (index) => {
         const frameNum = String(1 + index).padStart(3, '0');
@@ -50,15 +51,10 @@ const VideoBackground = () => {
         }
       };
 
-      // Preload all WebP images
+      // Preload all WebP images simply (do not draw frame 0 on load)
       for (let i = 0; i < totalFrames; i++) {
         const img = new Image();
         img.src = getFrameUrl(i);
-        img.onload = () => {
-          if (i === 0 && animState.frame === 0) {
-            drawFrame(0);
-          }
-        };
         images[i] = img;
       }
 
@@ -68,7 +64,7 @@ const VideoBackground = () => {
       let currentFrame = 0;
       let lastScrollTargetFrame = 0;
       const baseCatchupSpeed = 2.0; // Max frames to advance/reverse per render tick
-      const baseIdleSpeed = 0.35;    // Base autoplay speed when user is stationary
+      const baseIdleSpeed = 0.05;    // Base autoplay speed when user is stationary
 
       // Fade in the canvas opacity on mobile scroll
       const opacityTween = gsap.to(canvas, {
@@ -91,6 +87,9 @@ const VideoBackground = () => {
           onUpdate: (self) => {
             // Sync target frame to scroll progress
             scrollTargetFrame = self.progress * (totalFrames - 1);
+            if (self.progress > 0.001) {
+              hasScrolledCanvas = true;
+            }
           }
         }
       });
@@ -105,6 +104,12 @@ const VideoBackground = () => {
       let animationFrameId;
       const tick = () => {
         if (isDestroyed) return;
+
+        // Keep canvas blank (black) and do not update if the user hasn't scrolled yet
+        if (!hasScrolledCanvas) {
+          animationFrameId = requestAnimationFrame(tick);
+          return;
+        }
 
         // Calculate speed multiplier that scales up as the animation nears the end (after 60%)
         const accelerationStartFrame = totalFrames * 0.6;

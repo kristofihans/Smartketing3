@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import VideoCard from './VideoCard';
@@ -5,6 +6,18 @@ import './Portfolio.css';
 
 const VideoPortfolio = () => {
   const navigate = useNavigate();
+  const [hasScrolled, setHasScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setHasScrolled(true);
+        window.removeEventListener('scroll', handleScroll);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <section className="portfolio-section portfolio-section--first" id="video">
@@ -30,7 +43,7 @@ const VideoPortfolio = () => {
         >
           <VideoCard 
             src={`${import.meta.env.BASE_URL}video.mp4`} 
-            autoPlay={true} 
+            autoPlay={hasScrolled} 
           />
         </motion.div>
 

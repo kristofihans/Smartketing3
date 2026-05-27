@@ -28,6 +28,18 @@ const VideoCard = ({ src, autoPlay = false, onClick }) => {
     };
   }, []);
 
+  // Handle programmatic play/pause when autoPlay prop updates dynamically
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (!vid) return;
+
+    if (autoPlay) {
+      vid.play().catch(() => {});
+    } else {
+      vid.pause();
+    }
+  }, [autoPlay]);
+
   // Update progress bar styling directly (avoid React re-render cycles)
   useEffect(() => {
     const vid = videoRef.current;

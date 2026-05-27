@@ -14,8 +14,8 @@
   pointer-events: none;
   object-fit: cover;
   opacity: 1;
-  background-color: #050505;
-  filter: brightness(0.3); /* Ensure high contrast for white overlay text */
+  background-color: #000000; /* Pure black background color */
+  filter: brightness(0.3);    /* Ensure high contrast for white overlay text */
 
   /* GPU acceleration */
   will-change: transform;
@@ -24,6 +24,9 @@
 }
 
 @media (max-width: 768px) {
+  body {
+    background-color: #000000 !important; /* Pure black page container on mobile */
+  }
   canvas.video-background {
     opacity: 0; /* Hidden by default on mobile load, will fade in on scroll */
   }
