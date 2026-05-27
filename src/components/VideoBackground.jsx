@@ -66,16 +66,16 @@ const VideoBackground = () => {
       const baseCatchupSpeed = 2.0; // Max frames to advance/reverse per render tick
       const baseIdleSpeed = 0.0;    // Base autoplay speed when user is stationary
 
-      // Fade in the canvas opacity on mobile scroll
+      // Fade in the canvas opacity on mobile scroll with smooth catch-up
       const opacityTween = gsap.to(canvas, {
         scrollTrigger: {
           trigger: scrollTarget || document.documentElement,
           start: 'top 90%',
           end: 'top 30%',
-          scrub: true,
+          scrub: 1.5,
         },
         opacity: 1,
-        ease: 'power1.out'
+        ease: 'none'
       });
 
       const tl = gsap.timeline({
@@ -89,6 +89,13 @@ const VideoBackground = () => {
             scrollTargetFrame = self.progress * (totalFrames - 1);
             if (self.progress > 0.001) {
               hasScrolledCanvas = true;
+            } else {
+              hasScrolledCanvas = false;
+              targetFrame = 0;
+              currentFrame = 0;
+              if (canvasReady) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+              }
             }
           }
         }

@@ -33,6 +33,7 @@ const Home = () => {
       <Hero />
       <div className="app__content">
         <VideoBackground />
+        <div className="section-divider-gradient" />
         <div className="portfolio-wrapper">
           <VideoPortfolio />
           <PhotoPortfolio />
