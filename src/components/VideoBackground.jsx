@@ -64,7 +64,7 @@ const VideoBackground = () => {
       let currentFrame = 0;
       let lastScrollTargetFrame = 0;
       const baseCatchupSpeed = 2.0; // Max frames to advance/reverse per render tick
-      const baseIdleSpeed = 0.05;    // Base autoplay speed when user is stationary
+      const baseIdleSpeed = 0.0;    // Base autoplay speed when user is stationary
 
       // Fade in the canvas opacity on mobile scroll
       const opacityTween = gsap.to(canvas, {
