@@ -1,7 +1,7 @@
-import React from 'react';
+import { memo } from 'react';
 import './WhatsAppButton.css';
 
-const WhatsAppButton = () => {
+const WhatsAppButton = memo(() => {
   return (
     <a 
       href={`https://wa.me/${import.meta.env.VITE_WHATSAPP_NUMBER || '40753103730'}`} 
@@ -19,6 +19,6 @@ const WhatsAppButton = () => {
       </svg>
     </a>
   );
-};
+});
 
 export default WhatsAppButton;

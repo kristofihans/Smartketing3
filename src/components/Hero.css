@@ -102,17 +102,6 @@
   cursor: default;
 }
 
-.hero__scroll-text {
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.6);
-  letter-spacing: 0.06em;
-  text-align: center;
-  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.6);
-  padding: 0 var(--space-md);
-}
-
 /* Animated Chevron */
 .hero__scroll-icon {
   display: flex;
@@ -153,24 +142,6 @@
   text-decoration: none;
   pointer-events: auto;
   transition: var(--transition-base);
-}
-
-.hero__contact-text {
-  font-family: var(--font-heading);
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #fff;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  opacity: 0.8;
-  transition: var(--transition-fast);
-  text-shadow: 0 0 20px rgba(220, 38, 38, 0.4);
-}
-
-.hero__contact-link:hover .hero__contact-text {
-  opacity: 1;
-  color: var(--color-accent-1);
-  transform: translateY(-2px);
 }
 
 @keyframes chevronBounce {
@@ -235,10 +206,6 @@
     right: 0;
     padding-bottom: 1rem;
     pointer-events: none;
-  }
-
-  .hero__scroll-text {
-    font-size: 0.7rem;
   }
 
   .hero__chevron {

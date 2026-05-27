@@ -21,16 +21,6 @@
   gap: var(--space-xl);
 }
 
-.credits__label {
-  font-family: var(--font-heading);
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.4em;
-  color: rgba(255, 255, 255, 0.35);
-  margin-bottom: var(--space-lg);
-}
-
 .credits__grid {
   display: flex;
   flex-wrap: wrap;

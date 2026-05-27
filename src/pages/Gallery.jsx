@@ -5,6 +5,41 @@ import VideoCard from '../components/VideoCard';
 import Lightbox from '../components/Lightbox';
 import './Gallery.css';
 
+const allVideos = [
+  'video.mp4',
+  'video2.mp4',
+  'video3.mp4',
+  'video4.mp4',
+  'video5.mp4',
+];
+
+const galleryImages = [
+  'productimage1.webp',
+  'productimage2.webp',
+  'productimage3.webp',
+];
+
+const webCases = [
+  'web1.webp',
+  'web2.webp',
+];
+
+// Map elements to Lightbox media format
+const videoMediaItems = allVideos.map(src => ({
+  type: 'video',
+  src: `${import.meta.env.BASE_URL}${src}`
+}));
+
+const fotoMediaItems = galleryImages.map(src => ({
+  type: 'image',
+  src: `${import.meta.env.BASE_URL}${src}`
+}));
+
+const webMediaItems = webCases.map(src => ({
+  type: 'image',
+  src: `${import.meta.env.BASE_URL}${src}`
+}));
+
 const Gallery = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
@@ -23,41 +58,6 @@ const Gallery = () => {
   const handleTabChange = (tab) => {
     setSearchParams({ tab });
   };
-
-  const allVideos = [
-    'video.mp4',
-    'video2.mp4',
-    'video3.mp4',
-    'video4.mp4',
-    'video5.mp4',
-  ];
-
-  const galleryImages = [
-    'productimage1.webp',
-    'productimage2.webp',
-    'productimage3.webp',
-  ];
-
-  const webCases = [
-    'web1.webp',
-    'web2.webp',
-  ];
-
-  // Map elements to Lightbox media format
-  const videoMediaItems = allVideos.map(src => ({
-    type: 'video',
-    src: `${import.meta.env.BASE_URL}${src}`
-  }));
-
-  const fotoMediaItems = galleryImages.map(src => ({
-    type: 'image',
-    src: `${import.meta.env.BASE_URL}${src}`
-  }));
-
-  const webMediaItems = webCases.map(src => ({
-    type: 'image',
-    src: `${import.meta.env.BASE_URL}${src}`
-  }));
 
   return (
     <div className="gallery-page">

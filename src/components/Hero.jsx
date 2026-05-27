@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from 'react';
-import { motion } from 'framer-motion';
 import './Hero.css';
 
 const Hero = ({ onVideoLoad }) => {
@@ -43,7 +42,7 @@ const Hero = ({ onVideoLoad }) => {
           muted
           loop
           playsInline
-          preload="auto"
+          preload="metadata"
           aria-hidden="true"
           poster={`${import.meta.env.BASE_URL}heroposter.webp`}
           onPlay={handleVideoActive}
