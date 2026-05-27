@@ -22,3 +22,9 @@
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
 }
+
+@media (max-width: 768px) {
+  canvas.video-background {
+    opacity: 0; /* Hidden by default on mobile load, will fade in on scroll */
+  }
+}
