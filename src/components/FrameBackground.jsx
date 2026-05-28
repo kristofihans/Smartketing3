@@ -202,6 +202,31 @@ const FrameBackground = () => {
     let scrollTimeline = null;
     let animationFrameId = null;
 
+    // Preloader Scroll Pausing Logic: pauses background loading while the user is actively scrolling
+    let isScrolling = false;
+    let scrollTimeout = null;
+    let scrollResolve = null;
+
+    const onUserScroll = () => {
+      isScrolling = true;
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        isScrolling = false;
+        if (scrollResolve) {
+          const resolve = scrollResolve;
+          scrollResolve = null;
+          resolve();
+        }
+      }, 250); // Resume preloading 250ms after scroll stops
+    };
+
+    const waitUntilNotScrolling = () => {
+      if (!isScrolling) return Promise.resolve();
+      return new Promise(resolve => {
+        scrollResolve = resolve;
+      });
+    };
+
     // Start the scroll-driven animation (called only after all frames are loaded)
     const startAnimation = () => {
       if (isDestroyed) return;
@@ -238,6 +263,7 @@ const FrameBackground = () => {
           onUpdate: (self) => {
             scrollTargetFrame = self.progress * (totalFrames - 1);
             startTicking(); // Wake up animation loop on scroll
+            onUserScroll();  // Pause frame loading while user is actively scrolling
           }
         }
       });
@@ -331,6 +357,11 @@ const FrameBackground = () => {
         }
         for (let i = 0; i < remaining.length; i += CONCURRENCY) {
           if (isDestroyed) return;
+          
+          // Pause preloading if the user is currently scrolling to ensure rendering/scrolling is 100% smooth
+          await waitUntilNotScrolling();
+          if (isDestroyed) return;
+
           await Promise.all(
             remaining.slice(i, i + CONCURRENCY).map(idx => loadImage(idx))
           );
