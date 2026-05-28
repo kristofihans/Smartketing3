@@ -57,7 +57,7 @@ const FrameBackground = () => {
     };
 
     // Darken via canvas compositing (NOT CSS filter — that kills perf)
-    const DARKEN_ALPHA = isMobile ? 0.72 : 0.55;
+    const DARKEN_ALPHA = isMobile ? 0.40 : 0.30;
 
     const getNearestLoadedFrame = (index) => {
       if (frames[index]) return frames[index];
