@@ -208,13 +208,21 @@ const FrameBackground = () => {
       opacityTween = gsap.to(canvas, {
         scrollTrigger: {
           trigger: scrollTarget || document.documentElement,
-          start: isMobile ? 'top 80%' : 'top bottom',
-          end: isMobile ? 'top 50%' : 'top top',
+          start: isMobile ? 'top 80%' : 'top 90%',
+          end: isMobile ? 'top 50%' : 'top 20%',
           scrub: true,
         },
         opacity: 1,
         ease: 'power1.inOut'
       });
+
+      let isTicking = false;
+      const startTicking = () => {
+        if (!isTicking && !isDestroyed) {
+          isTicking = true;
+          tick();
+        }
+      };
 
       // Map scroll progress to frame index
       scrollTimeline = gsap.timeline({
@@ -225,6 +233,7 @@ const FrameBackground = () => {
           scrub: true,
           onUpdate: (self) => {
             scrollTargetFrame = self.progress * (totalFrames - 1);
+            startTicking(); // Wake up animation loop on scroll
           }
         }
       });
@@ -233,15 +242,20 @@ const FrameBackground = () => {
       const lerpFactor = 0.07;
 
       const tick = () => {
-        if (isDestroyed) return;
+        if (isDestroyed) {
+          isTicking = false;
+          return;
+        }
 
         targetFrame = scrollTargetFrame;
         const diff = targetFrame - currentFrame;
 
         if (Math.abs(diff) > 0.001) {
           currentFrame += diff * lerpFactor;
+          animationFrameId = requestAnimationFrame(tick);
         } else {
           currentFrame = targetFrame;
+          isTicking = false; // Stop ticking when we catch up
         }
 
         // Redraw check: on mobile, snap checks to whole numbers (no sub-frame calculations needed).
@@ -251,11 +265,7 @@ const FrameBackground = () => {
           drawFrame(currentFrame);
           lastDrawnFrame = quantized;
         }
-
-        animationFrameId = requestAnimationFrame(tick);
       };
-
-      animationFrameId = requestAnimationFrame(tick);
     };
 
     // --- Progressive Preload strategy ---
