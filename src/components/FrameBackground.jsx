@@ -161,7 +161,11 @@ const FrameBackground = () => {
         if (supportsImageBitmap) {
           fetch(getFrameUrl(index))
             .then(r => r.blob())
-            .then(blob => createImageBitmap(blob))
+            .then(blob => createImageBitmap(blob, {
+              imageOrientation: 'none',
+              premultiplyAlpha: 'none',
+              colorSpaceConversion: 'none'
+            }))
             .then(bitmap => {
               if (isDestroyed) { bitmap.close(); return resolve(null); }
               frames[index] = bitmap;
@@ -273,7 +277,7 @@ const FrameBackground = () => {
     // 2. Download a sparse pass (every 10th frame) to quickly cover the timeline.
     // 3. Download the remaining frames to fill in all the details.
     // This makes the page interactive immediately, smoothly resolving details in the background.
-    const CONCURRENCY = 8; // Concurrency limit for background loading to keep thread clear
+    const CONCURRENCY = isMobile ? 3 : 4; // Lower concurrency to prevent CPU choking, especially when cache is disabled
 
     const preloadAllFrames = async () => {
       // Step 1: Load and draw frame 0 immediately
@@ -299,6 +303,8 @@ const FrameBackground = () => {
           await Promise.all(
             sparseIndices.slice(i, i + CONCURRENCY).map(idx => loadImage(idx))
           );
+          // Yield to the main thread to allow rendering/scroll events to process
+          await new Promise(resolve => setTimeout(resolve, 45));
         }
 
         // Step 3: Fill pass (all other remaining frames)
@@ -313,6 +319,8 @@ const FrameBackground = () => {
           await Promise.all(
             remaining.slice(i, i + CONCURRENCY).map(idx => loadImage(idx))
           );
+          // Yield to the main thread to allow rendering/scroll events to process
+          await new Promise(resolve => setTimeout(resolve, 35));
         }
       };
 
