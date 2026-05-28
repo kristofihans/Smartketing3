@@ -208,8 +208,8 @@ const FrameBackground = () => {
       opacityTween = gsap.to(canvas, {
         scrollTrigger: {
           trigger: scrollTarget || document.documentElement,
-          start: isMobile ? 'top 30%' : 'top bottom',
-          end: isMobile ? 'top -10%' : 'top top',
+          start: isMobile ? 'top 80%' : 'top bottom',
+          end: isMobile ? 'top 50%' : 'top top',
           scrub: true,
         },
         opacity: 1,
