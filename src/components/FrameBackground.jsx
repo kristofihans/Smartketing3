@@ -279,6 +279,21 @@ const FrameBackground = () => {
     // This makes the page interactive immediately, smoothly resolving details in the background.
     const CONCURRENCY = isMobile ? 3 : 4; // Lower concurrency to prevent CPU choking, especially when cache is disabled
 
+    let idleTimeout = null;
+    let preloadTriggered = false;
+    let loadRemainingFrames = () => {};
+
+    const triggerRemaining = () => {
+      if (preloadTriggered || isDestroyed) return;
+      preloadTriggered = true;
+
+      window.removeEventListener('scroll', triggerRemaining);
+      window.removeEventListener('touchmove', triggerRemaining);
+      if (idleTimeout) clearTimeout(idleTimeout);
+
+      loadRemainingFrames();
+    };
+
     const preloadAllFrames = async () => {
       // Step 1: Load and draw frame 0 immediately
       await loadImage(0);
@@ -289,7 +304,7 @@ const FrameBackground = () => {
       // Start the animation scroll trigger immediately so scroll feels responsive right away
       startAnimation();
 
-      const loadRemaining = async () => {
+      loadRemainingFrames = async () => {
         const step = 1; // Load all frames for maximum animation smoothness
         const sparseInterval = 10;
 
@@ -324,11 +339,17 @@ const FrameBackground = () => {
         }
       };
 
-      // Defer loading remaining frames until after initial page load to prevent jank
+      // Smart Preloading Trigger: starts when the user scrolls, touches the screen, or after 3.5s of idle time
+      const setupPreloadTrigger = () => {
+        idleTimeout = setTimeout(triggerRemaining, 3500);
+        window.addEventListener('scroll', triggerRemaining, { passive: true });
+        window.addEventListener('touchmove', triggerRemaining, { passive: true });
+      };
+
       if (document.readyState === 'complete') {
-        setTimeout(loadRemaining, 800);
+        setupPreloadTrigger();
       } else {
-        window.addEventListener('load', () => setTimeout(loadRemaining, 800), { once: true });
+        window.addEventListener('load', setupPreloadTrigger, { once: true });
       }
     };
 
@@ -346,6 +367,12 @@ const FrameBackground = () => {
         scrollTimeline.kill();
       }
       ScrollTrigger.getAll().forEach(st => st.kill());
+      
+      // Clean up event listeners and timeouts
+      window.removeEventListener('scroll', triggerRemaining);
+      window.removeEventListener('touchmove', triggerRemaining);
+      if (idleTimeout) clearTimeout(idleTimeout);
+
       for (let i = 0; i < frames.length; i++) {
         if (frames[i]) {
           if (frames[i].close) frames[i].close();
