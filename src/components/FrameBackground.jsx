@@ -286,15 +286,13 @@ const FrameBackground = () => {
       startAnimation();
 
       const loadRemaining = async () => {
-        const step = isMobile ? 3 : 1; // Only load every 3rd frame on mobile (saves 66% memory & network overhead)
-        const sparseInterval = isMobile ? 12 : 10;
+        const step = 1; // Load all frames for maximum animation smoothness
+        const sparseInterval = 10;
 
-        // Step 2: Sparse pass to quickly get coarse frame coverage
+        // Step 2: Sparse pass (every 10th frame) to quickly get coarse frame coverage
         const sparseIndices = [];
         for (let i = sparseInterval; i < totalFrames; i += sparseInterval) {
-          if (i % step === 0) {
-            sparseIndices.push(i);
-          }
+          sparseIndices.push(i);
         }
         for (let i = 0; i < sparseIndices.length; i += CONCURRENCY) {
           if (isDestroyed) return;
@@ -305,7 +303,7 @@ const FrameBackground = () => {
 
         // Step 3: Fill pass (all other remaining frames)
         const remaining = [];
-        for (let i = 1; i < totalFrames; i += step) {
+        for (let i = 1; i < totalFrames; i++) {
           if (i % sparseInterval !== 0) {
             remaining.push(i);
           }
