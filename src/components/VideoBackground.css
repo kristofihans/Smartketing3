@@ -14,7 +14,7 @@
   pointer-events: none;
   object-fit: cover;
   background-color: #000000; /* Pure black background color */
-  filter: brightness(0.3);    /* Ensure high contrast for white overlay text */
+  filter: brightness(0.4);    /* Ensure high contrast for white overlay text */
 
   /* GPU acceleration */
   will-change: transform;

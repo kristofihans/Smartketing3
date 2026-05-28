@@ -15,7 +15,7 @@
   object-fit: cover;
   opacity: 1;
   background-color: #050505;
-  filter: brightness(0.35); /* Make the frame-by-frame animation darker */
+  filter: brightness(0.45); /* Make the frame-by-frame animation darker */
 
   /* GPU acceleration for smoother rendering */
   will-change: transform;

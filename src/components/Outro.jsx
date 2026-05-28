@@ -13,13 +13,33 @@ const clients = [
 ];
 
 const Outro = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    // Auto-reset after a delay for demo purposes
-    setTimeout(() => setSubmitted(false), 5000);
+    setIsSubmitting(true);
+
+    const name = document.getElementById('outro-contact-name')?.value;
+    const email = document.getElementById('outro-contact-email')?.value;
+    const message = document.getElementById('outro-contact-message')?.value;
+
+    try {
+      await fetch('https://script.google.com/macros/s/AKfycbzD3fl_xESWUMNNjiabC6Wp18FbE_UJ6RzzqWcE0gkRA0KWHylJcK9jk2bAMei1m9qT9A/exec', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
+        body: JSON.stringify({ name, email, message })
+      });
+      setSubmitted(true);
+      e.target.reset();
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('A apărut o eroare la trimiterea mesajului. Te rugăm să încerci din nou.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -50,7 +70,7 @@ const Outro = () => {
 
       <motion.div
         className="contact__container"
-        id="outro-contact"
+        id="contact"
         initial={{ opacity: 0, y: 50, filter: 'blur(8px)' }}
         whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
         viewport={{ once: true, amount: 0.2 }}
@@ -104,8 +124,13 @@ const Outro = () => {
               aria-label="Mesajul tău..."
               required
             />
-            <button className="contact__submit" type="submit" id="outro-contact-submit">
-              Trimite Cererea
+            <button 
+              className="contact__submit" 
+              type="submit" 
+              id="outro-contact-submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Se trimite...' : 'Trimite Cererea'}
             </button>
           </form>
         )}
