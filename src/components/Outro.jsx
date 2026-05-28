@@ -27,6 +27,7 @@ const Outro = () => {
     try {
       await fetch('https://script.google.com/macros/s/AKfycbzD3fl_xESWUMNNjiabC6Wp18FbE_UJ6RzzqWcE0gkRA0KWHylJcK9jk2bAMei1m9qT9A/exec', {
         method: 'POST',
+        mode: 'no-cors',
         headers: {
           'Content-Type': 'text/plain;charset=utf-8',
         },
