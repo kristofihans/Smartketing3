@@ -285,30 +285,44 @@ const FrameBackground = () => {
       // Start the animation scroll trigger immediately so scroll feels responsive right away
       startAnimation();
 
-      // Step 2: Sparse pass (every 10th frame) to quickly get coarse frame coverage
-      const sparseIndices = [];
-      for (let i = 10; i < totalFrames; i += 10) {
-        sparseIndices.push(i);
-      }
-      for (let i = 0; i < sparseIndices.length; i += CONCURRENCY) {
-        if (isDestroyed) return;
-        await Promise.all(
-          sparseIndices.slice(i, i + CONCURRENCY).map(idx => loadImage(idx))
-        );
-      }
+      const loadRemaining = async () => {
+        const step = isMobile ? 3 : 1; // Only load every 3rd frame on mobile (saves 66% memory & network overhead)
+        const sparseInterval = isMobile ? 12 : 10;
 
-      // Step 3: Fill pass (all other remaining frames)
-      const remaining = [];
-      for (let i = 1; i < totalFrames; i++) {
-        if (i % 10 !== 0) {
-          remaining.push(i);
+        // Step 2: Sparse pass to quickly get coarse frame coverage
+        const sparseIndices = [];
+        for (let i = sparseInterval; i < totalFrames; i += sparseInterval) {
+          if (i % step === 0) {
+            sparseIndices.push(i);
+          }
         }
-      }
-      for (let i = 0; i < remaining.length; i += CONCURRENCY) {
-        if (isDestroyed) return;
-        await Promise.all(
-          remaining.slice(i, i + CONCURRENCY).map(idx => loadImage(idx))
-        );
+        for (let i = 0; i < sparseIndices.length; i += CONCURRENCY) {
+          if (isDestroyed) return;
+          await Promise.all(
+            sparseIndices.slice(i, i + CONCURRENCY).map(idx => loadImage(idx))
+          );
+        }
+
+        // Step 3: Fill pass (all other remaining frames)
+        const remaining = [];
+        for (let i = 1; i < totalFrames; i += step) {
+          if (i % sparseInterval !== 0) {
+            remaining.push(i);
+          }
+        }
+        for (let i = 0; i < remaining.length; i += CONCURRENCY) {
+          if (isDestroyed) return;
+          await Promise.all(
+            remaining.slice(i, i + CONCURRENCY).map(idx => loadImage(idx))
+          );
+        }
+      };
+
+      // Defer loading remaining frames until after initial page load to prevent jank
+      if (document.readyState === 'complete') {
+        setTimeout(loadRemaining, 800);
+      } else {
+        window.addEventListener('load', () => setTimeout(loadRemaining, 800), { once: true });
       }
     };
 
