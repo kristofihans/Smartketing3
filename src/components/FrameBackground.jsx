@@ -53,7 +53,7 @@ const FrameBackground = () => {
 
     const getFrameUrl = (index) => {
       const frameNum = String(index + 1).padStart(3, '0');
-      return `${import.meta.env.BASE_URL}${folderName}/ezgif-frame-${frameNum}.jpg`;
+      return `${import.meta.env.BASE_URL}${folderName}/ezgif-frame-${frameNum}.webp`;
     };
 
     // Darken via canvas compositing (NOT CSS filter — that kills perf)

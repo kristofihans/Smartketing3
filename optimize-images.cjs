@@ -63,26 +63,30 @@ async function run() {
     }
   }
 
-  // 2. Optimize canvas frames in framesfinal/
-  if (fs.existsSync(FRAMES_DIR)) {
-    console.log('\nOptimizing canvas animation frames...');
-    const files = fs.readdirSync(FRAMES_DIR).filter(file => file.endsWith('.jpg'));
-    console.log(`Found ${files.length} frames to process.`);
+  // 2. Optimize canvas frames in huh/ and huhmobile/
+  const folders = ['huh', 'huhmobile'];
+  for (const folder of folders) {
+    const dirPath = path.join(PUBLIC_DIR, folder);
+    if (fs.existsSync(dirPath)) {
+      console.log(`\nOptimizing canvas animation frames in ${folder}...`);
+      const files = fs.readdirSync(dirPath).filter(file => file.endsWith('.jpg'));
+      console.log(`Found ${files.length} frames to process in ${folder}.`);
 
-    let frameCount = 0;
-    for (const file of files) {
-      const fullPath = path.join(FRAMES_DIR, file);
-      totalOriginal += fs.statSync(fullPath).size;
-      
-      // Resize 4K frames (3840x2160) to Full HD (1920x1080) for performance
-      await optimizeImage(fullPath, { width: 1920, quality: 85 });
-      
-      const webpPath = fullPath.replace(/\.jpg$/, '.webp');
-      totalCompressed += fs.statSync(webpPath).size;
-      
-      frameCount++;
-      if (frameCount % 20 === 0 || frameCount === files.length) {
-        console.log(`Processed ${frameCount}/${files.length} frames...`);
+      let frameCount = 0;
+      for (const file of files) {
+        const fullPath = path.join(dirPath, file);
+        totalOriginal += fs.statSync(fullPath).size;
+        
+        // Convert to webp with quality 80
+        await optimizeImage(fullPath, { quality: 80 });
+        
+        const webpPath = fullPath.replace(/\.jpg$/, '.webp');
+        totalCompressed += fs.statSync(webpPath).size;
+        
+        frameCount++;
+        if (frameCount % 50 === 0 || frameCount === files.length) {
+          console.log(`Processed ${frameCount}/${files.length} frames in ${folder}...`);
+        }
       }
     }
   }
