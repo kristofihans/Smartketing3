@@ -29,7 +29,8 @@ const FrameBackground = () => {
     // Cap canvas to viewport × DPR for performance (no need for raw 4K)
     const setupCanvasSize = (srcWidth, srcHeight) => {
       if (canvasReady) return;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      // Cap DPR to 1 on mobile to save pixel processing power (huge GPU boost)
+      const dpr = isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 2);
       const screenW = window.innerWidth * dpr;
       const screenH = window.innerHeight * dpr;
 
@@ -58,44 +59,6 @@ const FrameBackground = () => {
     // Darken via canvas compositing (NOT CSS filter — that kills perf)
     const DARKEN_ALPHA = 0.55;
 
-    // --- Film grain system ---
-    // Pre-generate a small noise texture on an offscreen canvas, then tile it
-    // over the main canvas with 'overlay' blend mode. Regenerated periodically
-    // for a living, cinematic grain effect.
-    const GRAIN_SIZE = 256; // Small texture, tiled across the canvas
-    const GRAIN_OPACITY = 0.06; // Subtle — cinematic, not distracting
-    const GRAIN_REFRESH_MS = 80; // Refresh grain pattern every ~80ms
-
-    const grainCanvas = document.createElement('canvas');
-    grainCanvas.width = GRAIN_SIZE;
-    grainCanvas.height = GRAIN_SIZE;
-    const grainCtx = grainCanvas.getContext('2d', { alpha: true });
-
-    const generateGrain = () => {
-      const imageData = grainCtx.createImageData(GRAIN_SIZE, GRAIN_SIZE);
-      const data = imageData.data;
-      for (let i = 0; i < data.length; i += 4) {
-        const v = Math.random() * 255;
-        data[i] = v;       // R
-        data[i + 1] = v;   // G
-        data[i + 2] = v;   // B
-        data[i + 3] = 255; // A
-      }
-      grainCtx.putImageData(imageData, 0, 0);
-    };
-
-    // Generate initial grain
-    generateGrain();
-
-    // Refresh grain on an interval for the "living" effect
-    let grainDirty = false;
-    let grainIntervalId = setInterval(() => {
-      if (!isDestroyed) {
-        generateGrain();
-        grainDirty = true; // Signal the tick loop to redraw
-      }
-    }, GRAIN_REFRESH_MS);
-
     const getNearestLoadedFrame = (index) => {
       if (frames[index]) return frames[index];
       for (let offset = 1; offset < totalFrames; offset++) {
@@ -108,52 +71,67 @@ const FrameBackground = () => {
       return null;
     };
 
-    // Draw with crossfade blending between adjacent frames.
-    // Accepts a fractional frame index (e.g. 34.7 → blend frame 34 & 35).
+    // Draw with crossfade blending between adjacent frames (desktop) or snap to nearest frame (mobile).
+    // Accepts a fractional frame index (e.g. 34.7).
     const drawFrame = (fractionalIndex) => {
-      const floorIdx = Math.max(0, Math.min(totalFrames - 1, Math.floor(fractionalIndex)));
-      const ceilIdx = Math.min(totalFrames - 1, floorIdx + 1);
-      const blend = fractionalIndex - floorIdx; // 0..1 blend factor
+      if (isMobile) {
+        // Mobile Optimization: snap to nearest frame and skip crossfade logic (cuts draw calls in half)
+        const frameIdx = Math.max(0, Math.min(totalFrames - 1, Math.round(fractionalIndex)));
+        const img = frames[frameIdx] || getNearestLoadedFrame(frameIdx);
+        if (!img) return;
 
-      const imgA = frames[floorIdx];
-      const imgB = frames[ceilIdx];
-
-      // Need at least one frame to draw. Fallback to nearest loaded if both are missing.
-      if (!imgA && !imgB) {
-        const fallback = getNearestLoadedFrame(floorIdx);
-        if (!fallback) return;
-        
-        const w = fallback.width || fallback.naturalWidth;
-        const h = fallback.height || fallback.naturalHeight;
+        const w = img.width || img.naturalWidth;
+        const h = img.height || img.naturalHeight;
         if (!w || !h) return;
         setupCanvasSize(w, h);
-        
+
         ctx.globalCompositeOperation = 'source-over';
         ctx.globalAlpha = 1;
-        ctx.drawImage(fallback, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       } else {
-        const primary = imgA || imgB;
-        const w = primary.width || primary.naturalWidth;
-        const h = primary.height || primary.naturalHeight;
-        if (!w || !h) return;
-        setupCanvasSize(w, h);
+        const floorIdx = Math.max(0, Math.min(totalFrames - 1, Math.floor(fractionalIndex)));
+        const ceilIdx = Math.min(totalFrames - 1, floorIdx + 1);
+        const blend = fractionalIndex - floorIdx; // 0..1 blend factor
 
-        ctx.globalCompositeOperation = 'source-over';
+        const imgA = frames[floorIdx];
+        const imgB = frames[ceilIdx];
 
-        // 1. Draw base frame (frame A) at full opacity
-        if (imgA) {
+        // Need at least one frame to draw. Fallback to nearest loaded if both are missing.
+        if (!imgA && !imgB) {
+          const fallback = getNearestLoadedFrame(floorIdx);
+          if (!fallback) return;
+          
+          const w = fallback.width || fallback.naturalWidth;
+          const h = fallback.height || fallback.naturalHeight;
+          if (!w || !h) return;
+          setupCanvasSize(w, h);
+          
+          ctx.globalCompositeOperation = 'source-over';
           ctx.globalAlpha = 1;
-          ctx.drawImage(imgA, 0, 0, canvas.width, canvas.height);
-        }
+          ctx.drawImage(fallback, 0, 0, canvas.width, canvas.height);
+        } else {
+          const primary = imgA || imgB;
+          const w = primary.width || primary.naturalWidth;
+          const h = primary.height || primary.naturalHeight;
+          if (!w || !h) return;
+          setupCanvasSize(w, h);
 
-        // 2. Crossfade: overlay frame B with blend opacity
-        //    When blend = 0 → pure frame A, blend = 1 → pure frame B
-        if (imgB && imgA !== imgB && blend > 0.01) {
-          ctx.globalAlpha = imgA ? blend : 1;
-          ctx.drawImage(imgB, 0, 0, canvas.width, canvas.height);
-        } else if (!imgA && imgB) {
-          ctx.globalAlpha = 1;
-          ctx.drawImage(imgB, 0, 0, canvas.width, canvas.height);
+          ctx.globalCompositeOperation = 'source-over';
+
+          // 1. Draw base frame (frame A) at full opacity
+          if (imgA) {
+            ctx.globalAlpha = 1;
+            ctx.drawImage(imgA, 0, 0, canvas.width, canvas.height);
+          }
+
+          // 2. Crossfade: overlay frame B with blend opacity
+          if (imgB && imgA !== imgB && blend > 0.01) {
+            ctx.globalAlpha = imgA ? blend : 1;
+            ctx.drawImage(imgB, 0, 0, canvas.width, canvas.height);
+          } else if (!imgA && imgB) {
+            ctx.globalAlpha = 1;
+            ctx.drawImage(imgB, 0, 0, canvas.width, canvas.height);
+          }
         }
       }
 
@@ -161,15 +139,6 @@ const FrameBackground = () => {
       ctx.globalAlpha = DARKEN_ALPHA;
       ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // 4. Film grain overlay — tile the small noise texture across the canvas
-      ctx.globalCompositeOperation = 'overlay';
-      ctx.globalAlpha = GRAIN_OPACITY;
-      for (let gx = 0; gx < canvas.width; gx += GRAIN_SIZE) {
-        for (let gy = 0; gy < canvas.height; gy += GRAIN_SIZE) {
-          ctx.drawImage(grainCanvas, gx, gy);
-        }
-      }
 
       // Reset composite state
       ctx.globalCompositeOperation = 'source-over';
@@ -275,14 +244,12 @@ const FrameBackground = () => {
           currentFrame = targetFrame;
         }
 
-        // Redraw whenever the fractional position changes enough to be
-        // visible (sub-frame blending) OR when grain texture has refreshed.
-        // We compare with 2 decimal places of precision for smooth blending.
-        const quantized = Math.round(currentFrame * 100);
-        if (quantized !== lastDrawnFrame || grainDirty) {
+        // Redraw check: on mobile, snap checks to whole numbers (no sub-frame calculations needed).
+        // On desktop, compare with 2 decimal places of precision for smooth blending.
+        const quantized = isMobile ? Math.round(currentFrame) : Math.round(currentFrame * 100);
+        if (quantized !== lastDrawnFrame) {
           drawFrame(currentFrame);
           lastDrawnFrame = quantized;
-          grainDirty = false;
         }
 
         animationFrameId = requestAnimationFrame(tick);
@@ -340,7 +307,6 @@ const FrameBackground = () => {
     return () => {
       isDestroyed = true;
       if (animationFrameId != null) cancelAnimationFrame(animationFrameId);
-      clearInterval(grainIntervalId);
       if (opacityTween) {
         if (opacityTween.scrollTrigger) opacityTween.scrollTrigger.kill();
         opacityTween.kill();
