@@ -16,23 +16,41 @@ const FrameBackground = () => {
     if (!ctx) return;
 
     const isMobile = window.innerWidth < 768;
-    const folderName = isMobile ? 'Donemobile' : 'Donedesktop';
-    const ext = 'webp';
-    const totalFrames = 240;
+    const folderName = isMobile ? 'namobile' : 'na';
+    const totalFrames = isMobile ? 299 : 566;
 
     const images = new Array(totalFrames);
-    const animState = { frame: 0 };
     let canvasReady = false;
     let isDestroyed = false;
 
     const getFrameUrl = (index) => {
-      const frameNum = String(1 + index).padStart(3, '0');
-      return `${import.meta.env.BASE_URL}${folderName}/ezgif-frame-${frameNum}.${ext}`;
+      const frameOffset = isMobile ? 71 : 1;
+      const frameNum = String(frameOffset + index).padStart(5, '0');
+      return `${import.meta.env.BASE_URL}${folderName}/scene${frameNum}.webp`;
     };
 
     // Render a single frame to canvas
     const drawFrame = (frameIndex) => {
-      const img = images[frameIndex];
+      let img = images[frameIndex];
+      
+      // If the target frame is not loaded, find the nearest loaded frame
+      if (!img || !img.complete || img.naturalWidth === 0) {
+        let nearestIndex = -1;
+        let minDiff = Infinity;
+        for (let i = 0; i < totalFrames; i++) {
+          if (images[i] && images[i].complete && images[i].naturalWidth !== 0) {
+            const diff = Math.abs(i - frameIndex);
+            if (diff < minDiff) {
+              minDiff = diff;
+              nearestIndex = i;
+            }
+          }
+        }
+        if (nearestIndex !== -1) {
+          img = images[nearestIndex];
+        }
+      }
+
       if (img && img.complete && img.naturalWidth !== 0) {
         if (!canvasReady) {
           canvas.width = img.width;
@@ -43,80 +61,113 @@ const FrameBackground = () => {
       }
     };
 
-    // Preload all images simply
-    for (let i = 0; i < totalFrames; i++) {
-      const img = new Image();
-      img.src = getFrameUrl(i);
-      img.onload = () => {
-        if (i === 0 && animState.frame === 0) {
-          drawFrame(0);
-        }
-      };
-      images[i] = img;
-    }
+    // Helper to load a single image
+    const loadImage = (index) => {
+      if (images[index]) return Promise.resolve(images[index]);
+      
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.src = getFrameUrl(index);
+        img.onload = () => {
+          images[index] = img;
+          if (Math.round(currentFrame) === index) {
+            drawFrame(index);
+          }
+          resolve(img);
+        };
+        img.onerror = () => {
+          resolve(null);
+        };
+      });
+    };
 
-    const scrollTarget = document.querySelector('.app__content');
     let scrollTargetFrame = 0;
     let targetFrame = 0;
     let currentFrame = 0;
-    let lastScrollTargetFrame = 0;
-    const baseCatchupSpeed = 2.0; // Max frames to advance/reverse per render tick
-    const baseIdleSpeed = 0.35;    // Base autoplay speed when user is stationary
 
+    // Progressive loading sequence
+    const loadProgressively = async () => {
+      // 1. Load frame 0 immediately and draw it
+      await loadImage(0);
+      drawFrame(0);
+
+      if (isDestroyed) return;
+
+      // 2. Load sparse frames (every 10th frame) to build quick timeline coverage
+      const sparseIndices = [];
+      for (let i = 0; i < totalFrames; i += 10) {
+        if (i !== 0) sparseIndices.push(i);
+      }
+      
+      const sparseChunkSize = 10;
+      for (let i = 0; i < sparseIndices.length; i += sparseChunkSize) {
+        if (isDestroyed) return;
+        const chunk = sparseIndices.slice(i, i + sparseChunkSize);
+        await Promise.all(chunk.map(idx => loadImage(idx)));
+      }
+
+      if (isDestroyed) return;
+
+      // 3. Load all other frames sequentially in the background in slightly larger chunks
+      const remainingIndices = [];
+      for (let i = 0; i < totalFrames; i++) {
+        if (i % 10 !== 0) {
+          remainingIndices.push(i);
+        }
+      }
+
+      const fillChunkSize = 15;
+      for (let i = 0; i < remainingIndices.length; i += fillChunkSize) {
+        if (isDestroyed) return;
+        const chunk = remainingIndices.slice(i, i + fillChunkSize);
+        await Promise.all(chunk.map(idx => loadImage(idx)));
+        // Brief pause to prevent freezing the network loop
+        await new Promise(r => setTimeout(r, 25));
+      }
+    };
+
+    loadProgressively();
+
+    const scrollTarget = document.querySelector('.app__content');
+
+    // Smooth opacity fade-in as we scroll past the Hero section (delayed on mobile)
+    const opacityTween = gsap.to(canvas, {
+      scrollTrigger: {
+        trigger: scrollTarget || document.documentElement,
+        start: isMobile ? 'top 30%' : 'top bottom',
+        end: isMobile ? 'top -10%' : 'top top',
+        scrub: true,
+      },
+      opacity: 1,
+      ease: 'power1.inOut'
+    });
+
+    // Timeline to map progress
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: scrollTarget || document.documentElement,
-        start: () => window.innerWidth < 768 ? 'top 20%' : 'top 80%',
+        start: 'top bottom',
         end: 'bottom bottom',
         scrub: true,
         onUpdate: (self) => {
-          // Sync target frame to scroll progress
           scrollTargetFrame = self.progress * (totalFrames - 1);
         }
       }
     });
 
-    tl.to(animState, {
-      frame: totalFrames - 1,
-      ease: 'none',
-      duration: 1
-    });
-
-    // Custom animation tick loop for constant-speed bidirectional catchup + idle autoplay + acceleration
+    // Custom animation tick loop with fluid linear interpolation (lerp) for inertia
     let animationFrameId;
     const tick = () => {
       if (isDestroyed) return;
 
-      // Calculate speed multiplier that scales up as the animation nears the end
-      // Starts accelerating after 60% of the animation (frame 144)
-      const accelerationStartFrame = totalFrames * 0.6;
-      let speedMultiplier = 1.0;
-      if (currentFrame > accelerationStartFrame) {
-        const ratio = (currentFrame - accelerationStartFrame) / (totalFrames - 1 - accelerationStartFrame);
-        speedMultiplier = 1.0 + ratio * 1.5; // Scales from 1.0 up to 2.5 at the end
-      }
+      targetFrame = scrollTargetFrame;
 
-      const activeCatchupSpeed = baseCatchupSpeed * speedMultiplier;
-      const activeIdleSpeed = baseIdleSpeed * speedMultiplier;
-
-      // Check if user is actively scrolling
-      const didScroll = scrollTargetFrame !== lastScrollTargetFrame;
-      lastScrollTargetFrame = scrollTargetFrame;
-
-      if (didScroll) {
-        targetFrame = scrollTargetFrame;
-      } else {
-        // Idle autoplay forward
-        if (targetFrame < totalFrames - 1) {
-          targetFrame = Math.min(totalFrames - 1, targetFrame + activeIdleSpeed);
-        }
-      }
-
-      // Smooth catchup (works both forward and backward)
-      if (Math.abs(currentFrame - targetFrame) > 0.05) {
-        const diff = targetFrame - currentFrame;
-        const step = Math.sign(diff) * Math.min(activeCatchupSpeed, Math.abs(diff));
-        currentFrame += step;
+      // Fluid lerping catchup (inertia/damping effect)
+      const lerpFactor = 0.07; // 0.07 gives a beautifully smooth, fluid lag/inertia
+      const diff = targetFrame - currentFrame;
+      
+      if (Math.abs(diff) > 0.01) {
+        currentFrame += diff * lerpFactor;
       } else {
         currentFrame = targetFrame;
       }
@@ -125,6 +176,7 @@ const FrameBackground = () => {
 
       animationFrameId = requestAnimationFrame(tick);
     };
+    
     animationFrameId = requestAnimationFrame(tick);
 
     // Cleanup
@@ -132,6 +184,10 @@ const FrameBackground = () => {
       isDestroyed = true;
       cancelAnimationFrame(animationFrameId);
       tl.kill();
+      if (opacityTween) {
+        if (opacityTween.scrollTrigger) opacityTween.scrollTrigger.kill();
+        opacityTween.kill();
+      }
       for (let i = 0; i < images.length; i++) {
         if (images[i]) {
           images[i].onload = null;

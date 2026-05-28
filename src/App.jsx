@@ -1,9 +1,13 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './App.css';
 import Navbar from './components/Navbar';
 import WhatsAppButton from './components/WhatsAppButton';
 import Home from './pages/Home';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const Gallery = lazy(() => import('./pages/Gallery'));
 

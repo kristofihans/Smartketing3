@@ -190,6 +190,7 @@ const VideoCard = ({ src, autoPlay = false, onClick }) => {
         muted
         loop
         playsInline
+        preload="metadata"
       />
 
       {/* Play / Pause overlay icon */}
