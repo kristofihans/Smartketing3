@@ -208,8 +208,8 @@ const FrameBackground = () => {
       opacityTween = gsap.to(canvas, {
         scrollTrigger: {
           trigger: scrollTarget || document.documentElement,
-          start: isMobile ? 'top 90%' : 'top 90%',
-          end: isMobile ? 'top 30%' : 'top 20%',
+          start: () => isMobile ? `top ${document.getElementById('hero')?.offsetHeight || 0}px` : 'top 90%',
+          end: () => isMobile ? `top ${(document.getElementById('hero')?.offsetHeight || 0) * 0.2}px` : 'top 20%',
           scrub: true,
         },
         opacity: 1,
@@ -228,7 +228,7 @@ const FrameBackground = () => {
       scrollTimeline = gsap.timeline({
         scrollTrigger: {
           trigger: scrollTarget || document.documentElement,
-          start: 'top bottom',
+          start: () => isMobile ? `top ${document.getElementById('hero')?.offsetHeight || 0}px` : 'top bottom',
           end: 'bottom bottom',
           scrub: true,
           onUpdate: (self) => {
