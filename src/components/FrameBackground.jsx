@@ -57,7 +57,7 @@ const FrameBackground = () => {
     };
 
     // Darken via canvas compositing (NOT CSS filter — that kills perf)
-    const DARKEN_ALPHA = 0.55;
+    const DARKEN_ALPHA = isMobile ? 0.72 : 0.55;
 
     const getNearestLoadedFrame = (index) => {
       if (frames[index]) return frames[index];
@@ -208,8 +208,8 @@ const FrameBackground = () => {
       opacityTween = gsap.to(canvas, {
         scrollTrigger: {
           trigger: scrollTarget || document.documentElement,
-          start: isMobile ? 'top 80%' : 'top 90%',
-          end: isMobile ? 'top 50%' : 'top 20%',
+          start: isMobile ? 'top 90%' : 'top 90%',
+          end: isMobile ? 'top 30%' : 'top 20%',
           scrub: true,
         },
         opacity: 1,
@@ -335,7 +335,7 @@ const FrameBackground = () => {
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="frame-background" />;
+  return <canvas ref={canvasRef} className="frame-background" style={{ opacity: 0 }} />;
 };
 
 export default FrameBackground;
