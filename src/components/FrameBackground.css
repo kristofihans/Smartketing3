@@ -15,12 +15,16 @@
   object-fit: cover;
   opacity: 0; /* Starts hidden, fades in via GSAP on scroll */
   background-color: #050505;
-  filter: brightness(0.45); /* Matte dark overlay for readability */
 
-  /* GPU acceleration for smoother rendering */
-  will-change: transform;
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
+  /* Brightness darkening is now composited directly in the canvas draw call,
+     NOT via CSS filter. CSS filter: brightness() on a constantly-repainting
+     canvas causes a full-layer repaint every frame — extremely expensive.
+     Removing it is the single biggest mobile perf win. */
+
+  /* Promote to compositor layer for smooth opacity transitions.
+     Only will-change: opacity (not transform) since we don't animate transform. */
+  will-change: opacity;
+  contain: strict;
 }
 
 .section-divider-gradient {
