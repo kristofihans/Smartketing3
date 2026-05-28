@@ -16,8 +16,8 @@ const FrameBackground = () => {
     if (!ctx) return;
 
     const isMobile = window.innerWidth < 768;
-    const folderName = isMobile ? 'trymobile' : 'try';
-    const totalFrames = isMobile ? 193 : 192;
+    const folderName = isMobile ? 'huhmobile' : 'huh';
+    const totalFrames = 209;
 
     const supportsImageBitmap = typeof createImageBitmap === 'function';
 
@@ -96,39 +96,73 @@ const FrameBackground = () => {
       }
     }, GRAIN_REFRESH_MS);
 
-    const drawFrame = (frameIndex) => {
-      let img = frames[frameIndex];
+    const getNearestLoadedFrame = (index) => {
+      if (frames[index]) return frames[index];
+      for (let offset = 1; offset < totalFrames; offset++) {
+        const before = index - offset;
+        const after = index + offset;
+        if (before >= 0 && frames[before]) return frames[before];
+        if (after < totalFrames && frames[after]) return frames[after];
+        if (before < 0 && after >= totalFrames) break;
+      }
+      return null;
+    };
 
-      // Bidirectional expanding search for nearest loaded frame
-      if (!img) {
-        for (let offset = 1; offset < totalFrames; offset++) {
-          const before = frameIndex - offset;
-          const after = frameIndex + offset;
-          if (before >= 0 && frames[before]) { img = frames[before]; break; }
-          if (after < totalFrames && frames[after]) { img = frames[after]; break; }
-          if (before < 0 && after >= totalFrames) break;
+    // Draw with crossfade blending between adjacent frames.
+    // Accepts a fractional frame index (e.g. 34.7 → blend frame 34 & 35).
+    const drawFrame = (fractionalIndex) => {
+      const floorIdx = Math.max(0, Math.min(totalFrames - 1, Math.floor(fractionalIndex)));
+      const ceilIdx = Math.min(totalFrames - 1, floorIdx + 1);
+      const blend = fractionalIndex - floorIdx; // 0..1 blend factor
+
+      const imgA = frames[floorIdx];
+      const imgB = frames[ceilIdx];
+
+      // Need at least one frame to draw. Fallback to nearest loaded if both are missing.
+      if (!imgA && !imgB) {
+        const fallback = getNearestLoadedFrame(floorIdx);
+        if (!fallback) return;
+        
+        const w = fallback.width || fallback.naturalWidth;
+        const h = fallback.height || fallback.naturalHeight;
+        if (!w || !h) return;
+        setupCanvasSize(w, h);
+        
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 1;
+        ctx.drawImage(fallback, 0, 0, canvas.width, canvas.height);
+      } else {
+        const primary = imgA || imgB;
+        const w = primary.width || primary.naturalWidth;
+        const h = primary.height || primary.naturalHeight;
+        if (!w || !h) return;
+        setupCanvasSize(w, h);
+
+        ctx.globalCompositeOperation = 'source-over';
+
+        // 1. Draw base frame (frame A) at full opacity
+        if (imgA) {
+          ctx.globalAlpha = 1;
+          ctx.drawImage(imgA, 0, 0, canvas.width, canvas.height);
+        }
+
+        // 2. Crossfade: overlay frame B with blend opacity
+        //    When blend = 0 → pure frame A, blend = 1 → pure frame B
+        if (imgB && imgA !== imgB && blend > 0.01) {
+          ctx.globalAlpha = imgA ? blend : 1;
+          ctx.drawImage(imgB, 0, 0, canvas.width, canvas.height);
+        } else if (!imgA && imgB) {
+          ctx.globalAlpha = 1;
+          ctx.drawImage(imgB, 0, 0, canvas.width, canvas.height);
         }
       }
 
-      if (!img) return;
-
-      const w = img.width || img.naturalWidth;
-      const h = img.height || img.naturalHeight;
-      if (!w || !h) return;
-
-      setupCanvasSize(w, h);
-
-      // 1. Draw the video frame
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.globalAlpha = 1;
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-      // 2. Darken overlay (replaces CSS filter: brightness)
+      // 3. Darken overlay (replaces CSS filter: brightness)
       ctx.globalAlpha = DARKEN_ALPHA;
       ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // 3. Film grain overlay — tile the small noise texture across the canvas
+      // 4. Film grain overlay — tile the small noise texture across the canvas
       ctx.globalCompositeOperation = 'overlay';
       ctx.globalAlpha = GRAIN_OPACITY;
       for (let gx = 0; gx < canvas.width; gx += GRAIN_SIZE) {
@@ -140,6 +174,14 @@ const FrameBackground = () => {
       // Reset composite state
       ctx.globalCompositeOperation = 'source-over';
       ctx.globalAlpha = 1;
+    };
+
+    const triggerRedrawIfRelevant = (index) => {
+      const floorIdx = Math.floor(currentFrame);
+      const ceilIdx = Math.ceil(currentFrame);
+      if (index === floorIdx || index === ceilIdx) {
+        drawFrame(currentFrame);
+      }
     };
 
     // Image loading with off-thread decode where possible
@@ -154,6 +196,7 @@ const FrameBackground = () => {
             .then(bitmap => {
               if (isDestroyed) { bitmap.close(); return resolve(null); }
               frames[index] = bitmap;
+              triggerRedrawIfRelevant(index);
               resolve(bitmap);
             })
             .catch(() => resolve(null));
@@ -163,6 +206,7 @@ const FrameBackground = () => {
           const onReady = () => {
             if (isDestroyed) return resolve(null);
             frames[index] = img;
+            triggerRedrawIfRelevant(index);
             resolve(img);
           };
           if (img.decode) {
@@ -225,17 +269,19 @@ const FrameBackground = () => {
         targetFrame = scrollTargetFrame;
         const diff = targetFrame - currentFrame;
 
-        if (Math.abs(diff) > 0.01) {
+        if (Math.abs(diff) > 0.001) {
           currentFrame += diff * lerpFactor;
         } else {
           currentFrame = targetFrame;
         }
 
-        // Redraw when the frame changes OR when grain texture has refreshed
-        const roundedFrame = Math.round(currentFrame);
-        if (roundedFrame !== lastDrawnFrame || grainDirty) {
-          drawFrame(roundedFrame);
-          lastDrawnFrame = roundedFrame;
+        // Redraw whenever the fractional position changes enough to be
+        // visible (sub-frame blending) OR when grain texture has refreshed.
+        // We compare with 2 decimal places of precision for smooth blending.
+        const quantized = Math.round(currentFrame * 100);
+        if (quantized !== lastDrawnFrame || grainDirty) {
+          drawFrame(currentFrame);
+          lastDrawnFrame = quantized;
           grainDirty = false;
         }
 
@@ -245,11 +291,12 @@ const FrameBackground = () => {
       animationFrameId = requestAnimationFrame(tick);
     };
 
-    // --- Preload strategy ---
-    // 1. Load frame 0 immediately and draw it as a static preview
-    // 2. Load ALL remaining frames with high concurrency (no delays)
-    // 3. Only start the scroll animation after everything is loaded
-    const CONCURRENCY = 12; // Aggressive parallel loading
+    // --- Progressive Preload strategy ---
+    // 1. Load frame 0 immediately, draw it, and START animation immediately.
+    // 2. Download a sparse pass (every 10th frame) to quickly cover the timeline.
+    // 3. Download the remaining frames to fill in all the details.
+    // This makes the page interactive immediately, smoothly resolving details in the background.
+    const CONCURRENCY = 8; // Concurrency limit for background loading to keep thread clear
 
     const preloadAllFrames = async () => {
       // Step 1: Load and draw frame 0 immediately
@@ -258,23 +305,33 @@ const FrameBackground = () => {
       drawFrame(0);
       lastDrawnFrame = 0;
 
-      // Step 2: Load all remaining frames with high concurrency
-      const remaining = [];
-      for (let i = 1; i < totalFrames; i++) {
-        remaining.push(i);
+      // Start the animation scroll trigger immediately so scroll feels responsive right away
+      startAnimation();
+
+      // Step 2: Sparse pass (every 10th frame) to quickly get coarse frame coverage
+      const sparseIndices = [];
+      for (let i = 10; i < totalFrames; i += 10) {
+        sparseIndices.push(i);
+      }
+      for (let i = 0; i < sparseIndices.length; i += CONCURRENCY) {
+        if (isDestroyed) return;
+        await Promise.all(
+          sparseIndices.slice(i, i + CONCURRENCY).map(idx => loadImage(idx))
+        );
       }
 
-      // Process in concurrent batches, no artificial delays
+      // Step 3: Fill pass (all other remaining frames)
+      const remaining = [];
+      for (let i = 1; i < totalFrames; i++) {
+        if (i % 10 !== 0) {
+          remaining.push(i);
+        }
+      }
       for (let i = 0; i < remaining.length; i += CONCURRENCY) {
         if (isDestroyed) return;
         await Promise.all(
           remaining.slice(i, i + CONCURRENCY).map(idx => loadImage(idx))
         );
-      }
-
-      // Step 3: All frames loaded — start the animation
-      if (!isDestroyed) {
-        startAnimation();
       }
     };
 
