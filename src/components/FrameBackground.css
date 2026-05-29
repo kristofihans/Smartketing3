@@ -13,7 +13,7 @@
   z-index: 0;
   pointer-events: none;
   object-fit: cover;
-  opacity: 0; /* Starts hidden, fades in via GSAP on scroll */
+  opacity: 1;
   background-color: #050505;
 
   /* Brightness is composited in-canvas via globalAlpha — NO CSS filter.
