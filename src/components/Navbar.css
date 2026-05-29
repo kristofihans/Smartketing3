@@ -82,14 +82,14 @@
 
 /* CTA Button — Brutalist */
 .navbar__cta {
-  padding: 0.75rem 2rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #fff;
   background: var(--gradient-button);
-  border-radius: var(--radius-full);
+  border-radius: 50%;
   transition: var(--transition-fast);
   border: 1px solid var(--color-accent-1);
 }
@@ -99,6 +99,14 @@
   color: #fff;
   border-color: var(--color-accent-1);
   transform: translateY(-2px);
+}
+
+.navbar__cta-icon {
+  transition: transform 0.3s ease;
+}
+
+.navbar__cta:hover .navbar__cta-icon {
+  transform: translateY(3px);
 }
 
 /* Mobile Hamburger */
@@ -219,15 +227,15 @@
   }
 
   .navbar__mobile-cta {
-    padding: 0.75rem 2rem;
-    font-size: 0.75rem;
-    font-weight: 600;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: #fff;
     background: var(--gradient-button);
     border: 1px solid var(--color-accent-1);
-    border-radius: var(--radius-full);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    border-radius: 50%;
     transition: var(--transition-fast);
   }
 
@@ -235,5 +243,9 @@
     background: transparent;
     color: #fff;
     border-color: var(--color-accent-1);
+  }
+
+  .navbar__mobile-cta:active .navbar__cta-icon {
+    transform: translateY(3px);
   }
 }
