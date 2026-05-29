@@ -63,13 +63,13 @@ async function run() {
     }
   }
 
-  // 2. Optimize canvas frames in desktop/ and mobile/
-  const folders = ['desktop', 'mobile'];
+  // 2. Optimize canvas frames in ultimatedesktop/ and ultimatemobile/
+  const folders = ['ultimatedesktop', 'ultimatemobile'];
   for (const folder of folders) {
     const dirPath = path.join(PUBLIC_DIR, folder);
     if (fs.existsSync(dirPath)) {
       console.log(`\nOptimizing canvas animation frames in ${folder}...`);
-      const files = fs.readdirSync(dirPath).filter(file => file.endsWith('.jpg'));
+      const files = fs.readdirSync(dirPath).filter(file => file.endsWith('.png'));
       console.log(`Found ${files.length} frames to process in ${folder}.`);
 
       let frameCount = 0;
@@ -80,7 +80,7 @@ async function run() {
         // Convert to webp with quality 80
         await optimizeImage(fullPath, { quality: 80 });
         
-        const webpPath = fullPath.replace(/\.jpg$/, '.webp');
+        const webpPath = fullPath.replace(/\.png$/, '.webp');
         totalCompressed += fs.statSync(webpPath).size;
         
         frameCount++;
