@@ -63,8 +63,8 @@ async function run() {
     }
   }
 
-  // 2. Optimize canvas frames in huh/ and huhmobile/
-  const folders = ['huh', 'huhmobile'];
+  // 2. Optimize canvas frames in desktop/ and mobile/
+  const folders = ['desktop', 'mobile'];
   for (const folder of folders) {
     const dirPath = path.join(PUBLIC_DIR, folder);
     if (fs.existsSync(dirPath)) {

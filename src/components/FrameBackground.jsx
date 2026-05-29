@@ -66,7 +66,7 @@ const FrameBackground = () => {
     for (let i = 0; i < totalFrames; i++) {
       const img = new Image();
       const frameNum = String(i + 1).padStart(3, '0');
-      img.src = `${import.meta.env.BASE_URL}${folderName}/ezgif-frame-${frameNum}.jpg`;
+      img.src = `${import.meta.env.BASE_URL}${folderName}/ezgif-frame-${frameNum}.webp`;
       img.onload = () => {
         loadedCount++;
         if (loadedCount === 1) {
