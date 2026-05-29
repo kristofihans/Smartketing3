@@ -95,9 +95,25 @@ const FrameBackground = () => {
       }
     });
 
+    let mobileOpacityInstance = null;
+    if (isMobile) {
+      mobileOpacityInstance = ScrollTrigger.create({
+        trigger: scrollTarget || document.documentElement,
+        start: () => `top ${document.getElementById('hero')?.offsetHeight || window.innerHeight}px`,
+        end: () => `top ${(document.getElementById('hero')?.offsetHeight || window.innerHeight) * 0.2}px`,
+        scrub: true,
+        onUpdate: (self) => {
+          canvas.style.opacity = self.progress;
+        }
+      });
+    }
+
     return () => {
       window.removeEventListener('resize', resizeCanvas);
       scrollTriggerInstance.kill();
+      if (mobileOpacityInstance) {
+        mobileOpacityInstance.kill();
+      }
     };
   }, []);
 
