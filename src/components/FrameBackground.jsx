@@ -15,12 +15,12 @@ const FrameBackground = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const totalFrames = 209;
+    const totalFrames = 261;
     const frames = [];
     let loadedCount = 0;
 
     const isMobile = window.innerWidth < 768;
-    const folderName = isMobile ? 'huhmobile' : 'huh';
+    const folderName = isMobile ? 'mobile' : 'desktop';
 
     const animationObj = { frame: 0 };
 
@@ -66,7 +66,7 @@ const FrameBackground = () => {
     for (let i = 0; i < totalFrames; i++) {
       const img = new Image();
       const frameNum = String(i + 1).padStart(3, '0');
-      img.src = `${import.meta.env.BASE_URL}${folderName}/ezgif-frame-${frameNum}.webp`;
+      img.src = `${import.meta.env.BASE_URL}${folderName}/ezgif-frame-${frameNum}.jpg`;
       img.onload = () => {
         loadedCount++;
         if (loadedCount === 1) {
