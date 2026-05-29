@@ -82,16 +82,27 @@ const FrameBackground = () => {
     resizeCanvas();
 
     const scrollTarget = document.querySelector('.app__content');
+    let tweenInstance = null;
 
-    // Simple scroll-driven frame animation trigger
+    // Scroll-driven frame animation trigger with momentum autoplay
     const scrollTriggerInstance = ScrollTrigger.create({
       trigger: scrollTarget || document.documentElement,
       start: 'top bottom',
       end: 'bottom bottom',
-      scrub: true,
       onUpdate: (self) => {
-        animationObj.frame = self.progress * (totalFrames - 1);
-        drawFrame(animationObj.frame);
+        const targetFrameValue = self.progress * (totalFrames - 1);
+        if (tweenInstance) {
+          tweenInstance.kill();
+        }
+        tweenInstance = gsap.to(animationObj, {
+          frame: targetFrameValue,
+          duration: 0.2, // Plays / autoplays a few frames smoothly to catch up
+          ease: 'none',
+          overwrite: 'auto',
+          onUpdate: () => {
+            drawFrame(animationObj.frame);
+          }
+        });
       }
     });
 
@@ -111,6 +122,9 @@ const FrameBackground = () => {
     return () => {
       window.removeEventListener('resize', resizeCanvas);
       scrollTriggerInstance.kill();
+      if (tweenInstance) {
+        tweenInstance.kill();
+      }
       if (mobileOpacityInstance) {
         mobileOpacityInstance.kill();
       }
