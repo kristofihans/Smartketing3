@@ -87,7 +87,7 @@ const FrameBackground = () => {
       { id: '#photo', frame: 220 },
       { id: '#web', frame: 320 },
       { id: '#services', frame: 420 },
-      { id: '#contact', frame: 522 }
+      { id: '.outro', frame: 522 }
     ];
 
     let currentTween = null;
@@ -98,14 +98,14 @@ const FrameBackground = () => {
       const dist = Math.abs(animationObj.frame - target);
       if (dist === 0) return;
 
-      // Constant velocity: 150 frames per second.
-      // Cap duration between 0.2s and 1.5s to keep it highly responsive.
-      const duration = Math.min(1.5, Math.max(0.2, dist / 150));
+      // Cinematic velocity: 120 frames per second.
+      // Cap duration between 0.4s and 1.5s to play transitions smoothly and show frame details.
+      const duration = Math.min(1.5, Math.max(0.4, dist / 120));
 
       currentTween = gsap.to(animationObj, {
         frame: target,
         duration: duration,
-        ease: 'none',
+        ease: 'power1.out',
         onUpdate: () => {
           drawFrame(animationObj.frame);
         }
