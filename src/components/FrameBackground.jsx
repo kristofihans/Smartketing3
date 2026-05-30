@@ -98,9 +98,9 @@ const FrameBackground = () => {
       const dist = Math.abs(animationObj.frame - target);
       if (dist === 0) return;
 
-      // Cinematic velocity: 120 frames per second.
-      // Cap duration between 0.4s and 1.5s to play transitions smoothly and show frame details.
-      const duration = Math.min(1.5, Math.max(0.4, dist / 120));
+      // Slightly faster cinematic velocity: 170 frames per second.
+      // Cap duration between 0.3s and 1.2s to keep transitions responsive.
+      const duration = Math.min(1.2, Math.max(0.3, dist / 170));
 
       currentTween = gsap.to(animationObj, {
         frame: target,
