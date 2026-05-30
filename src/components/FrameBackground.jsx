@@ -24,34 +24,9 @@ const FrameBackground = () => {
 
     const animationObj = { frame: 0 };
 
-    let drawWidth = 0;
-    let drawHeight = 0;
-    let drawX = 0;
-    let drawY = 0;
-
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-
-      // Safe check to find the first loaded frame to read aspect ratio
-      const loadedImg = frames.find(img => img.complete && img.naturalWidth > 0);
-      const imgWidth = loadedImg ? loadedImg.naturalWidth : (isMobile ? 720 : 1920);
-      const imgHeight = loadedImg ? loadedImg.naturalHeight : (isMobile ? 1280 : 1080);
-      const imgAspect = imgWidth / imgHeight;
-      const canvasAspect = canvas.width / canvas.height;
-
-      if (canvasAspect > imgAspect) {
-        drawWidth = canvas.width;
-        drawHeight = canvas.width / imgAspect;
-        drawX = 0;
-        drawY = (canvas.height - drawHeight) / 2;
-      } else {
-        drawWidth = canvas.height * imgAspect;
-        drawHeight = canvas.height;
-        drawX = (canvas.width - drawWidth) / 2;
-        drawY = 0;
-      }
-
       drawFrame(animationObj.frame);
     };
 
@@ -60,7 +35,30 @@ const FrameBackground = () => {
       const img = frames[imgIdx];
       if (img && img.complete) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+
+        // Aspect ratio cover logic
+        const imgAspect = img.naturalWidth / img.naturalHeight;
+        const canvasAspect = canvas.width / canvas.height;
+        let drawWidth, drawHeight, x, y;
+
+        if (canvasAspect > imgAspect) {
+          drawWidth = canvas.width;
+          drawHeight = canvas.width / imgAspect;
+          x = 0;
+          y = (canvas.height - drawHeight) / 2;
+        } else {
+          drawWidth = canvas.height * imgAspect;
+          drawHeight = canvas.height;
+          x = (canvas.width - drawWidth) / 2;
+          y = 0;
+        }
+
+        ctx.drawImage(img, x, y, drawWidth, drawHeight);
+
+        // Darken overlay
+        const darkenAlpha = isMobile ? 0.40 : 0.30;
+        ctx.fillStyle = `rgba(0, 0, 0, ${darkenAlpha})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
     };
 
@@ -92,37 +90,56 @@ const FrameBackground = () => {
       { id: '.outro', frame: 522 }
     ];
 
+    let currentTween = null;
+
+    const playToFrame = (target) => {
+      if (currentTween) currentTween.kill();
+
+      const dist = Math.abs(animationObj.frame - target);
+      if (dist === 0) return;
+
+      // Cinematic velocity: 200 frames per second.
+      // Cap duration between 0.25s and 0.8s for a balanced snappy feel.
+      const duration = Math.min(0.8, Math.max(0.25, dist / 200));
+
+      currentTween = gsap.to(animationObj, {
+        frame: target,
+        duration: duration,
+        ease: 'power1.out',
+        onUpdate: () => {
+          drawFrame(animationObj.frame);
+        }
+      });
+    };
+
     const triggers = [];
 
-    sections.forEach((sec, idx) => {
-      if (idx === 0) return; // Hero is the starting frame (0)
-      const prevSec = sections[idx - 1];
+    sections.forEach((sec) => {
       const el = document.querySelector(sec.id);
       if (!el) return;
 
-      let start = 'top bottom';
-      if (isMobile && prevSec.id === '#hero') {
-        start = 'top 37.5vh'; // Match mobile hero height
-      }
+      let start = 'top 50%';
+      let end = 'bottom 50%';
 
-      // Create scroll-scrubbed tween for each section transition
-      const tween = gsap.fromTo(animationObj,
-        { frame: prevSec.frame },
-        {
-          frame: sec.frame,
-          ease: 'none',
-          onUpdate: () => {
-            drawFrame(animationObj.frame);
-          }
+      if (isMobile) {
+        if (sec.id === '#hero') {
+          start = 'top 0%';
+          end = 'bottom 30%';
+        } else if (sec.id === '#video') {
+          start = 'top 30%';
+          end = 'bottom 50%';
         }
-      );
+      }
 
       const trigger = ScrollTrigger.create({
         trigger: el,
         start: start,
-        end: 'top top',
-        scrub: true, // Direct follow (play on swipe, snap to finish)
-        animation: tween
+        end: end,
+        onToggle: (self) => {
+          if (self.isActive) {
+            playToFrame(sec.frame);
+          }
+        }
       });
       triggers.push(trigger);
     });
@@ -130,15 +147,11 @@ const FrameBackground = () => {
     return () => {
       window.removeEventListener('resize', resizeCanvas);
       triggers.forEach(t => t.kill());
+      if (currentTween) currentTween.kill();
     };
   }, []);
 
-  return (
-    <>
-      <canvas ref={canvasRef} className="frame-background" />
-      <div className="frame-background__overlay" />
-    </>
-  );
+  return <canvas ref={canvasRef} className="frame-background" />;
 };
 
 export default FrameBackground;
