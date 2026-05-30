@@ -134,3 +134,60 @@ button {
 
 /* Utility Classes */
 
+/* Full-Screen Scroll Snapping Layout (Global) */
+html {
+  scroll-snap-type: y mandatory;
+}
+
+.hero {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.portfolio-section,
+.services,
+.outro {
+  height: 100vh;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  overflow: hidden;
+  padding: 0 !important;
+}
+
+.outro {
+  flex-direction: column;
+}
+
+.footer {
+  scroll-snap-align: end;
+}
+
+/* Centered containers spacing tweaks */
+.section-container,
+.services__content-wrapper {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (min-width: 769px) {
+  .hero {
+    height: 100vh;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: 0 !important;
+  }
+}
+

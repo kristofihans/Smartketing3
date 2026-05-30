@@ -11,12 +11,6 @@
 
 
 
-@media (max-width: 768px) {
-  .services {
-    height: auto;
-  }
-}
-
 /* Content over background */
 .services__content-wrapper {
   position: relative;
@@ -124,22 +118,45 @@
 }
 
 @media (max-width: 768px) {
+  .services {
+    display: block;
+    height: 100vh;
+    min-height: 100vh;
+    overflow-y: auto;
+    padding: 4vh var(--space-md) !important;
+    box-sizing: border-box;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
   .services__content-wrapper {
     position: relative;
-    height: auto;
-    padding-top: 5vh;
-    padding-bottom: 10vh;
-    padding-left: var(--space-md);
-    padding-right: var(--space-md);
+    padding: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
   }
 
   .services__header {
-    margin-bottom: var(--space-lg);
+    margin-bottom: 2.5vh;
+    text-align: center;
+  }
+  
+  .services__title {
+    font-size: clamp(2.4rem, 6.5vh, 3.2rem);
+    margin-bottom: 0.5vh;
+  }
+  
+  .services__subtitle {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
   }
 
   .services__grid {
     grid-template-columns: 1fr;
-    gap: var(--space-md);
+    gap: 1.5vh;
   }
 
   .span-2, .span-1 {
@@ -147,7 +164,39 @@
   }
 
   .bento-card {
-    padding: var(--space-md) var(--space-lg);
+    padding: 1.1rem 1.4rem;
+    gap: 0.5rem;
     border-radius: 20px;
+    background: rgba(16, 16, 20, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(220, 38, 38, 0.2);
+  }
+  
+  .bento-card__title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+  }
+  
+  .bento-card__desc {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.65);
+  }
+}
+
+@media (min-width: 769px) {
+  .services__header {
+    margin-bottom: var(--space-md);
+  }
+  
+  .services__title {
+    font-size: clamp(2.5rem, 5.5vh, 4rem);
+    margin-bottom: var(--space-xs);
+  }
+  
+  .bento-card {
+    padding: var(--space-md) var(--space-lg);
   }
 }

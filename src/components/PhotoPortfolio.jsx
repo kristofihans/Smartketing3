@@ -43,15 +43,7 @@ const PhotoPortfolio = () => {
           </button>
         </div>
 
-        <div className="scroll-next-wrapper">
-          <a href="#web" className="scroll-next-link" aria-label="Mergi la secțiunea Digital Experiences">
-            <div className="scroll-chevron-icon">
-              <span className="scroll-chevron" />
-              <span className="scroll-chevron" />
-              <span className="scroll-chevron" />
-            </div>
-          </a>
-        </div>
+
       </div>
     </section>
   );

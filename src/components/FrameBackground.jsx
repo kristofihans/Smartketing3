@@ -81,22 +81,59 @@ const FrameBackground = () => {
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    const scrollTarget = document.querySelector('.app__content');
+    const sections = [
+      { id: '#hero', frame: 0 },
+      { id: '#video', frame: 120 },
+      { id: '#photo', frame: 220 },
+      { id: '#web', frame: 320 },
+      { id: '#services', frame: 420 },
+      { id: '#contact', frame: 522 }
+    ];
 
-    // Scroll-driven frame animation trigger with direct scrubbing
-    const scrollTriggerInstance = ScrollTrigger.create({
-      trigger: scrollTarget || document.documentElement,
-      start: 'top bottom',
-      end: 'bottom bottom',
-      scrub: true,
-      onUpdate: (self) => {
-        animationObj.frame = self.progress * (totalFrames - 1);
-        drawFrame(animationObj.frame);
-      }
+    let currentTween = null;
+
+    const playToFrame = (target) => {
+      if (currentTween) currentTween.kill();
+
+      const dist = Math.abs(animationObj.frame - target);
+      if (dist === 0) return;
+
+      // Constant velocity: 150 frames per second.
+      // Cap duration between 0.2s and 1.5s to keep it highly responsive.
+      const duration = Math.min(1.5, Math.max(0.2, dist / 150));
+
+      currentTween = gsap.to(animationObj, {
+        frame: target,
+        duration: duration,
+        ease: 'none',
+        onUpdate: () => {
+          drawFrame(animationObj.frame);
+        }
+      });
+    };
+
+    const triggers = [];
+
+    sections.forEach((sec) => {
+      const el = document.querySelector(sec.id);
+      if (!el) return;
+
+      const trigger = ScrollTrigger.create({
+        trigger: el,
+        start: 'top 50%',
+        end: 'bottom 50%',
+        onToggle: (self) => {
+          if (self.isActive) {
+            playToFrame(sec.frame);
+          }
+        }
+      });
+      triggers.push(trigger);
     });
 
     let mobileOpacityInstance = null;
     if (isMobile) {
+      const scrollTarget = document.querySelector('.app__content');
       mobileOpacityInstance = ScrollTrigger.create({
         trigger: scrollTarget || document.documentElement,
         start: () => `top ${document.getElementById('hero')?.offsetHeight || window.innerHeight}px`,
@@ -110,7 +147,8 @@ const FrameBackground = () => {
 
     return () => {
       window.removeEventListener('resize', resizeCanvas);
-      scrollTriggerInstance.kill();
+      triggers.forEach(t => t.kill());
+      if (currentTween) currentTween.kill();
       if (mobileOpacityInstance) {
         mobileOpacityInstance.kill();
       }

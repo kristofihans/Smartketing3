@@ -5,7 +5,9 @@
 
 .outro {
   position: relative;
-  padding: var(--space-3xl) var(--space-lg);
+  padding: 0 var(--space-lg) !important;
+  padding-top: 12vh !important;
+  justify-content: flex-start !important;
   background: transparent;
   color: #fff;
   text-align: center;
@@ -14,7 +16,7 @@
 
 /* Credits Section */
 .credits {
-  margin-bottom: var(--space-3xl);
+  margin-bottom: 5vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -26,7 +28,7 @@
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: var(--space-2xl);
+  gap: 4rem 6rem;
   max-width: 1000px;
 }
 
@@ -69,15 +71,42 @@
 }
 
 @media (max-width: 768px) {
+  .outro {
+    padding-top: 8vh !important;
+  }
+
+  .credits {
+    margin-bottom: 2.5vh;
+    gap: 2.5vh;
+  }
+
   .credits__grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-xl);
+    gap: 3.5vh 6vw;
     width: 100%;
   }
   
   .client-logo {
-    font-size: 1rem;
-    opacity: 0.8;
+    font-size: 0.95rem;
+    opacity: 0.85;
+  }
+
+  .outro__separator {
+    margin: 2vh auto;
+  }
+}
+
+@media (min-width: 769px) {
+  .credits {
+    margin-bottom: 4vh;
+  }
+  
+  .outro__separator {
+    margin: 3vh auto;
+  }
+  
+  .client-logo {
+    font-size: 1.25rem;
   }
 }
