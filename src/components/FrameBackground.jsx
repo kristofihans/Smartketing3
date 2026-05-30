@@ -118,10 +118,23 @@ const FrameBackground = () => {
       const el = document.querySelector(sec.id);
       if (!el) return;
 
+      let start = 'top 50%';
+      let end = 'bottom 50%';
+
+      if (isMobile) {
+        if (sec.id === '#hero') {
+          start = 'top 0%';
+          end = 'bottom 30%';
+        } else if (sec.id === '#video') {
+          start = 'top 30%';
+          end = 'bottom 50%';
+        }
+      }
+
       const trigger = ScrollTrigger.create({
         trigger: el,
-        start: 'top 50%',
-        end: 'bottom 50%',
+        start: start,
+        end: end,
         onToggle: (self) => {
           if (self.isActive) {
             playToFrame(sec.frame);
